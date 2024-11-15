@@ -2,9 +2,11 @@
  * @license
  * 
  * shelly-porssisahko
+ * shelly-porssisahko-en
  * 
  * (c) Jussi isotalo - http://jisotalo.fi
  * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
  * 
  * License: GNU Affero General Public License v3.0 
  */

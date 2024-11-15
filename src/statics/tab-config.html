@@ -1,36 +1,38 @@
 <!--
 /**
 * shelly-porssisahko
+* shelly-porssisahko-en
 * 
 * (c) Jussi isotalo - http://jisotalo.fi
 * https://github.com/jisotalo/shelly-porssisahko
+* https://github.com/jisotalo/shelly-porssisahko-en
 * 
 * License: GNU Affero General Public License v3.0 
 */
 -->
-<div id="cfg-l" class="tc">Ladataan...</div>
+<div id="cfg-l" class="tc">Loading...</div>
 <div id="cfg" style="display: none;">
-  <div class="tc b" style="font-size: 1.2em;">YLEISET ASETUKSET</div>
+  <div class="tc b" style="font-size: 1.2em;">COMMON SETTINGS</div>
   <table class="m cc">
     <tr>
-      <td>Maa</td>
+      <td>Country</td>
       <td>
         <select id="g">
-          <option value="fi">Suomi</option>
-          <option value="ee">Viro</option>
+          <option value="fi">Finland</option>
+          <option value="ee">Estonia</option>
           <option value="lv">Latvia</option>
-          <option value="lt">Liettua</option>
+          <option value="lt">Lithuania</option>
         </select>
       </td>
     </tr>
     <tr>
-      <td class="w180">Sähkön ALV</td>
+      <td class="w180">VAT</td>
       <td>
         <input type="text" id="vat" size="2"> %
       </td>
     </tr>
     <tr>
-      <td>Siirtomaksut</td>
+      <td>Transfer fees</td>
       <td>
         07-22: <input type="text" id="day" size="2"> c/kWh
         <div class="mt10">
@@ -40,99 +42,99 @@
     </tr>
   </table>
 
-  <div class="tc mt10 b" style="font-size: 1.2em;">OHJAUS #<span id="ci"></span></div>
+  <div class="tc mt10 b" style="font-size: 1.2em;">CONTROL #<span id="ci"></span></div>
   <table class="m cc">
     <tr>
-      <td class="w180">Käytössä</td>
+      <td class="w180">Enabled</td>
       <td>
         <label><input type="checkbox" id="en"> ON/OFF</label>
       </td>
     </tr>
     <tr>
-      <td>Nimi</td>
+      <td>Name</td>
       <td>
         <input type="text" id="n">
       </td>
     </tr>
     <tr>
-      <td>Ohjaustapa</td>
+      <td>Mode</td>
       <td>
         <select id="mode">
         </select>
       </td>
     </tr>
     <tr>
-      <td>Ohjattavat lähdöt</td>
+      <td>Shelly outputs</td>
       <td>
         <input type="text" id="outs" size="4">
       </td>
     </tr>
     <tr>
-      <td>Lähdön ohjaus</td>
+      <td>Write outputs</td>
       <td>
         <select id="oc">
-          <option value="0">Aina tarkistaessa</option>
-          <option value="1">Vain muuttuessa</option>
+          <option value="0">Always</option>
+          <option value="1">On-change</option>
         </select>
       </td>
     </tr>
     <tr>
-      <td>Ohjausminuutit</td>
+      <td>Control minutes</td>
       <td>
         <input type="text" id="min" size="2"> min
       </td>
     </tr>
     <tr>
-      <td>Käänteinen ohjaus</td>
+      <td>Inverted</td>
       <td>
         <input type="checkbox" id="inv">
       </td>
     </tr>
     <tr>
-      <td>Varmuustunnit</td>
+      <td>Backup hours</td>
       <td id="bk"></td>
     </tr>
     <tr>
-      <td>Hätätilaohjaus</td>
+      <td>Emergency</td>
       <td>
         <label><input type="checkbox" id="err"> ON/OFF</label>
       </td>
     </tr>
     <tr>
-      <td>Pakko-ohjaukset</td>
+      <td>Overrides</td>
       <td>
         <details class="ml5">
-          <summary>Näytä/piilota</summary>
+          <summary>Show/hide</summary>
           <table id="fh" class="sm mt10"></table>
         </details>
       </td>
     </tr>
   </table>
 
-  <div class="mt10 b">KÄSIOHJAUS</div>
+  <div class="mt10 b">MANUAL MODE</div>
   <table class="m cc">
     <tr>
-      <td class="w180">Ohjaus</td>
+      <td class="w180">Output</td>
       <td>
         <label><input type="checkbox" id="m0-cmd"> ON/OFF</label>
       </td>
     </tr>
   </table>
 
-  <div class="mt10 b">HINTARAJA</div>
+  <div class="mt10 b">PRICE LIMIT</div>
   <table class="m cc">
     <tr>
-      <td class="w180">Hintaraja</td>
+      <td class="w180">Price limit</td>
       <td>
         <input type="text" id="m1-lim" size="2"> c/kWh
       </td>
     </tr>
   </table>
 
-  <div class="mt10 b">JAKSON HALVIMMAT TUNNIT</div>
+  <div class="mt10 b">CHEAPEST HOURS</div>
   <table class="m cc">
     <tr>
-      <td class="w180">Ajanjakso</td>
+      <td class="w180">Time period</td>
       <td>
         <select id="m2-per">
           <option value="24">24h</option>
@@ -142,66 +144,66 @@
           <option value="4">4h</option>
           <option value="3">3h</option>
           <option value="2">2h</option>
-          <option value="-1">oma valinta (1 jakso)</option>
-          <option value="-2">oma valinta (2 jaksoa)</option>
+          <option value="-1">custom (1 period)</option>
+          <option value="-2">custom (2 periods)</option>
         </select>
 
         <span class="h">
-          aikaväli (klo):
+          time range:
         </span>
       </td>
     </tr>
     <tr class="m2-c">
-      <td>Oma ajanjakso</td>
+      <td>Custom</td>
       <td>
         <input type="text" id="m2-ps" size="2">:00 - <input type="text" id="m2-pe" size="2">:00
       </td>
     </tr>
     <tr>
-      <td>Tuntimäärä</td>
+      <td>Hour count</td>
       <td>
         <input type="text" id="m2-cnt" size="2"> h
       </td>
     </tr>
     <tr class="m2-c2">
-      <td>Oma ajanjakso 2</td>
+      <td>Custom 2</td>
       <td>
         <input type="text" id="m2-ps2" size="2">:00 - <input type="text" id="m2-pe2" size="2">:00
       </td>
     </tr>
     <tr class="m2-c2">
-      <td>Tuntimäärä 2</td>
+      <td>Hour count 2</td>
       <td>
         <input type="text" id="m2-cnt2" size="2"> h
       </td>
     </tr>
     <tr>
-      <td>Peräkkäiset</td>
+      <td>Sequential</td>
       <td>
         <input type="checkbox" id="m2-sq">
       </td>
     </tr>
     <tr>
-      <td>Aina päällä -raja</td>
+      <td>Always on limit</td>
       <td>
         <input type="text" size="2" id="m2-lim"> c/kWh
       </td>
     </tr>
     <tr>
-      <td>Maksimihinta</td>
+      <td>Max. price limit</td>
       <td>
         <input type="text" size="2" id="m2-m"> c/kWh
       </td>
     </tr>
   </table>
   <div class="tc mt10">
-    <input id="save" type="button" value="Tallenna">
+    <input id="save" type="button" value="Save">
   </div>
 
-  <div class="tc mt10 b">TOIMINNOT</div>
+  <div class="tc mt10 b">COMMANDS</div>
   <div class="tc">
-    <input class="mt10" type="button" id="force" value="Pakko-ohjaus"><br>
-    <input class="mt10" type="button" onclick="window.open(`/`)" value="Shellyn hallinta">
+    <input class="mt10" type="button" id="force" value="Manual override"><br>
+    <input class="mt10" type="button" onclick="window.open(`/`)" value="Shelly WebUI">
   </div>
 </div>
 

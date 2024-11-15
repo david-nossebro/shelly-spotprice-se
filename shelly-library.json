@@ -1,37 +1,37 @@
 [
   {
     "fname": "dist/shelly-porssisahko.js",
-    "title": "Pörssisähköohjaus | Pääskripti (shelly-porssisahko.js)",
-    "description": "Asenna lähtökohtaisesti tämä - tukee useampaa ohjausta. Github: https://github.com/jisotalo/shelly-porssisahko"
+    "title": "Main script | All features (shelly-porssisahko.js)",
+    "description": "Main script with all features - supports multiple controls. Github: https://github.com/jisotalo/shelly-porssisahko-en"
   },
   {
     "fname": "dist/shelly-porssisahko-1-instance-no-history.js",
-    "title": "Pörssisähköohjaus | Yksi ohjaus, ilman historaa",
-    "description": "Vain yksi ohjaus ja ilman historiaa (pienempi muistin käyttö)"
+    "title": "Main script | One control without history",
+    "description": "Only one control without history (smaller memory usage)"
   },
   {
     "fname": "dist/shelly-porssisahko-open-meteo-api.js",
-    "title": "Pörssisähköohjaus | Esimerkki sääennusteen hyödyntämisestä",
-    "description": "Esimerkki: Hakee vuorokauden kylmimmän lämpötilan ja muuttaa sen perusteella halvimpien tuntien lukumäärää."
+    "title": "Example | Using weather forecast",
+    "description": "Example: Uses weather forecast for the day to adjust number of cheapest hours."
   },
   {
     "fname": "dist/shelly-porssisahko-addon-temp-hours.js",
-    "title": "Pörssisähköohjaus | Esimerkki Plus Addonin käytöstä",
-    "description": "Esimerkki: Muuttaa halvimpien tuntien lukumäärää Shelly Plus Addonin mittaaman lämpötilan perusteella"
+    "title": "Example | Using Plus Addon",
+    "description": "Example: Uses temperature measured by Shelly Plus Addon to adjust number of cheapest hours"
   },
   {
     "fname": "dist/shelly-porssisahko-addon-temp.js",
-    "title": "Pörssisähköohjaus | Esimerkki Plus Addonin käytöstä",
-    "description": "Esimerkki: Ylikirjoittaa ohjauksen tarvittaessa Shelly Plus Addonin mittaaman lämpötilan perusteella"
+    "title": "Example | Using Plus Addon 2",
+    "description": "Example: Overrides output if needed by the temperature measured by Shelly Plus Addon"
   },
   {
     "fname": "dist/shelly-porssisahko-ht-sensor-temp.js",
-    "title": "Pörssisähköohjaus | Esimerkki H&T:n käytöstä",
-    "description": "Esimerkki: Muuttaa halvimpien tuntien lukumäärää Shelly H&T:n mittaaman lämpötilan perusteella"
+    "title": "Example | Using Shelly H&T",
+    "description": "Example: Uses temperature measured by Shelly H&T to adjust number of cheapest hours"
   },
   {
     "fname": "dist/shelly-porssisahko-config.js",
-    "title": "Asetusskripti | Rinnakkainen skripti asetusten muuttamiseen",
-    "description": "Tämän avulla voi muuttaa asetuksia skriptin kautta (esim. etänä puhelimella). Asenna pääskriptin rinnalle, muuta asetuksia ja aja skripti läpi"
+    "title": "Setting script | Parallel script to adjust settings",
+    "description": "Can be used to change main script settings (for example remotely by Shelly app). Install as second script, change settings and run the script."
   }
 ]

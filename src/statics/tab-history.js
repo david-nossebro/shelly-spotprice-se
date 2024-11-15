@@ -1,8 +1,10 @@
 /**
  * shelly-porssisahko
+ * shelly-porssisahko-en
  * 
  * (c) Jussi isotalo - http://jisotalo.fi
  * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
  * 
  * License: GNU Affero General Public License v3.0 
  */
@@ -14,7 +16,7 @@
    * Used when instance is changed or during error
    */
   const clear = (e) => {
-    qs("s-hist").innerHTML = "<tr><td colspan=3>Ei historiaa</td></tr>";
+    qs("s-hist").innerHTML = "<tr><td colspan=3>No history</td></tr>";
   }
 
   /**
@@ -54,8 +56,8 @@
       for (let row of history.sort((a, b) => b[0] - a[0])) {
         let data = `<tr>`;
         data += `<td class="fit">${formatTime(new Date(row[0] * 1000))}</td>`;
-        data += `<td style="color:${row[1] ? `green` : `red`}">${row[1] ? `Ohjaus päälle` : `Ohjaus pois`}</td>`;
-        data += `<td>${STATE_STR[row[2]]?.replace(" (%s asti)", "")}</td>`;
+        data += `<td style="color:${row[1] ? `green` : `red`}">${row[1] ? `Output ON` : `Output OFF`}</td>`;
+        data += `<td>${STATE_STR[row[2]]?.replace(" (until %s)", "")}</td>`;
         data += `</tr>`;
 
         e.innerHTML += data;

@@ -1,8 +1,10 @@
 /**
  * shelly-porssisahko
+ * shelly-porssisahko-en
  * 
  * (c) Jussi isotalo - http://jisotalo.fi
  * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
  * 
  * License: GNU Affero General Public License v3.0 
  */
@@ -73,7 +75,7 @@
     try {
       if (instChanged || !state) {
         configRead = false;
-        qs("cfg-l").innerHTML = 'Ladataan...';
+        qs("cfg-l").innerHTML = 'Loading...';
         qs("cfg").style.display = 'none';
         return;
       }
@@ -112,7 +114,7 @@
       qs("bk").innerHTML = bk;
 
       //building forced hours
-      let fh = `<tr><td>Tunti</td><td>OFF</td><td>-</td><td>ON</td></tr>`;
+      let fh = `<tr><td>Hour</td><td>OFF</td><td>-</td><td>ON</td></tr>`;
       for (let i = 0; i < 24; i++) {
         fh += `<tr><td>${("" + i).padStart(2, "0")}</td>${radioRow(`f${i}`, 0)}${radioRow(`f${i}`, -1)}${radioRow(`f${i}`, 1)}</tr>`;
       }
@@ -219,12 +221,12 @@
 
       await getData(`${URLS}?r=r&i=${inst}`);
 
-      alert(`Tallennettu!`);
+      alert(`Saved!`);
       configRead = false;
 
     } catch (err) {
       console.error(err)
-      alert("Virhe: " + err);
+      alert("Error: " + err);
     }
   };
 
@@ -232,13 +234,13 @@
    * Manual force button click
    */
   let force = async () => {
-    let hours = prompt(`Pakko-ohjaus (#${inst+1}) - kesto tunteina? (0 = peru nykyinen)`);
+    let hours = prompt(`Manual override (#${inst+1}) - how many hours? (0 = cancel active override)`);
 
     if (hours != null) {
       hours = Number(hours);
 
       let cmd = hours > 0
-        ? parseInt(prompt("Pakko-ohjataanko ohjaus päälle (1) vai pois (0)?", "1"))
+        ? parseInt(prompt("Override output ON (1) or OFF (0)?", "1"))
         : 0;
       
       if (isNaN(cmd)) {
@@ -246,7 +248,7 @@
       }
 
       let res = await getData(`${URLS}?r=f&i=${inst}&ts=${hours > 0 ? Math.floor(Date.now() / 1000 + hours * 60 * 60) : 0}&c=${cmd}`);
-      alert(res.code == 204 ? "OK!" : `Virhe: ${res.txt}`);
+      alert(res.code == 204 ? "OK!" : `Error: ${res.txt}`);
     }
   }
 

@@ -1,8 +1,10 @@
 /**
  * shelly-porssisahko
+ * shelly-porssisahko-en
  * 
  * (c) Jussi isotalo - http://jisotalo.fi
  * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
  * 
  * License: GNU Affero General Public License v3.0 
  */
@@ -46,29 +48,29 @@ let DBG = () => { };
  * Enumeration of state
  */
 let STATE_STR = [
-  "Käynnistetään", //0
-  "Käsiohjaus", //1
-  "Hinta alle rajan", //2
-  "Hinta yli rajan", //3
-  "Hinta ei halvimpia tällä ajanjaksolla", //4
-  "Hinta halvimpia tällä ajanjaksolla", //5
-  "Hinta alle aina päällä -rajan", //6
-  "Varmuustuntiohjaus (ei hintoja, aika tiedossa)", //7
-  "Hätätilaohjaus (aika ei tiedossa)", //8
-  "Pakko-ohjaus (%s asti)", //9
-  "Pakko-ohjattu tunti", //10
-  "Hinta yli maksimirajan", //11
-  "Käyttäjän skriptiohjaus ylikirjoittaa", //12
-  "Tunnin ohjausminuutit käytetty" //13
+  "Starting...", //0
+  "Manual mode", //1
+  "Price below limit", //2
+  "Price over limit", //3
+  "Not among cheapest in this period", //4
+  "Cheapest among this period", //5
+  "Price below always on limit", //6
+  "Backup control (no prices, time known)", //7
+  "Emergency control (time unknown)", //8
+  "Manual override (until %s)", //9
+  "Override hour", //10
+  "Price over max. limit", //11
+  "User script overwriting", //12
+  "Control minutes of this hour already used" //13
 ]
 
 /**
  * Enumeration of mode
  */
 let MODE_STR = [
-  "Käsiohjaus",
-  "Hintaraja",
-  "Jakson halvimmat tunnit"
+  "Manual",
+  "Price limit",
+  "Cheapest hours"
 ]
 
 /**
@@ -119,7 +121,7 @@ let openTab = async (tab) => {
     } catch (err) {
       DBG(me(), "error", err);
       console.error(err);
-      if (confirm(`Sivun avaus epäonnistui - kokeile uudelleen? (${err.message})`)) {
+      if (confirm(`Failed to load the page - try again? (${err.message})`)) {
         openTab(tab);
       }
     }
@@ -301,7 +303,7 @@ let updateLoop = async () => {
       doc.title = (state.s.dn ? state.s.dn + " - " : "") + "Pörssisähkö";
 
       //Updating instances to dropdown
-      qs("inst").innerHTML = state.c.names.map((n, i) => `<option value="${i}">Ohjaus #${(i + 1)}: ${n}</option>`)
+      qs("inst").innerHTML = state.c.names.map((n, i) => `<option value="${i}">Control #${(i + 1)}: ${n}</option>`)
       qs("inst").value = inst;
 
       //If status 503 the shelly is just now busy running the logic -> do nothing

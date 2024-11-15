@@ -1,8 +1,10 @@
 /**
  * shelly-porssisahko
+ * shelly-porssisahko-en
  * 
  * (c) Jussi isotalo - http://jisotalo.fi
  * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
  * 
  * License: GNU Affero General Public License v3.0 
  */
@@ -10,7 +12,7 @@
   /**
    * Table content if data not yet available
    */
-  let notYetKnown = `<tr><td colspan="3">Ei vielä tiedossa</td></tr>`;
+  let notYetKnown = `<tr><td colspan="3">Not yet known</td></tr>`;
 
   /**
    * Clears status page
@@ -41,12 +43,12 @@
     try {
       if (instChanged || state === undefined) {
         clear();
-        qs("s-cmd").innerHTML = "Ladataan...";
+        qs("s-cmd").innerHTML = "Loading...";
         return;
       }
       
       if (!state) {
-        throw new Error("ei saatu dataa");
+        throw new Error("no data");
       }
 
       /** data (state) */
@@ -62,7 +64,7 @@
 
       //If instance is enabled (otherwise just update price lists)
       if (ci.en) {
-        qs("s-cmd").innerHTML = si.cmd ? "PÄÄLLÄ" : "POIS";
+        qs("s-cmd").innerHTML = si.cmd ? "ON" : "OFF";
         qs("s-cmd").style.color = si.cmd ? "green" : "red";
 
         qs("s-mode").innerHTML = MODE_STR[ci.mode];
@@ -73,7 +75,7 @@
         
         qs("s-st").innerHTML = si.st === 9
           ? STATE_STR[si.st].replace("%s", formatDateTime(new Date(si.fCmdTs * 1000), false))
-          : STATE_STR[si.st] + (ci.inv ? " (käänteinen)" : "");
+          : STATE_STR[si.st] + (ci.inv ? " (inverted)" : "");
 
         //Extended status for instance (by user scripts)
         if (si.str != "") {
@@ -81,38 +83,38 @@
         }
 
         qs("s-info").innerHTML = si.chkTs > 0
-          ? `Ohjaus tarkistettu ${formatTime(new Date(si.chkTs * 1000))}`
-          : `Tarkistetaan ohjausta...`;
+          ? `Output checked at ${formatTime(new Date(si.chkTs * 1000))}`
+          : `Checking output...`;
 
       } else {
         //Instance is not enabled, clear almost everything
         clear();
-        qs("s-info").innerHTML = `Ei käytössä`;
-        qs("s-cmd").innerHTML = `Ohjaus #${(inst + 1)} ei ole käytössä`;
+        qs("s-info").innerHTML = `Not enabled`;
+        qs("s-cmd").innerHTML = `Control #${(inst + 1)} isn't enabled`;
         qs("s-cmd").style.color = "000";
       }
 
       //Device name and instance
-      let dn = s.dn ? s.dn : '<i>Ei asetettu</i>';
+      let dn = s.dn ? s.dn : '<i>Not set</i>';
       if (c.names[inst]) {
         dn += ` | ${c.names[inst]}`
       }
-      dn += ` (ohjaus #${(inst + 1)})`;
+      dn += ` (control #${(inst + 1)})`;
       qs("s-dn").innerHTML = dn;
 
       //Price info
       qs("s-info").innerHTML += ` - ${s.p[0].ts > 0
-        ? `Hinnat päivitetty ${formatTime(new Date(Math.max(s.p[0].ts, s.p[1].ts) * 1000))}`
-        : "Hintoja haetaan..."}`;
+        ? `Prices updated at ${formatTime(new Date(Math.max(s.p[0].ts, s.p[1].ts) * 1000))}`
+        : "Getting prices..."}`;
       
       //Version info (footer)
-      qs("s-v").innerHTML = `Käynnistetty ${formatDateTime(new Date(s.upTs * 1000))} (käynnissä ${((new Date().getTime() - new Date(s.upTs * 1000).getTime()) / 1000.0 / 60.0 / 60.0 / 24.0).toFixed("1")} päivää) - versio ${s.v}`;
+      qs("s-v").innerHTML = `Started at ${formatDateTime(new Date(s.upTs * 1000))} (uptime ${((new Date().getTime() - new Date(s.upTs * 1000).getTime()) / 1000.0 / 60.0 / 60.0 / 24.0).toFixed("1")} days) - version ${s.v}`;
 
       /**
        * Helper that builds price info table for today or tomorrow
        */
       const buildPriceTable = (priceInfo) => {
-        let header = `<tr><td class="t bg">Keskiarvo</td><td class="t bg">Halvin</td><td class="t bg">Kallein</td></tr>`;
+        let header = `<tr><td class="t bg">Average</td><td class="t bg">Lowest</td><td class="t bg">Highest</td></tr>`;
 
         if (priceInfo.ts == 0) {
           return `${header}${notYetKnown}`;
@@ -134,7 +136,7 @@
        * Helper that builds price/cmd table for today or tomorrow 
        */
       const buildPriceList = (dayIndex, element) => {
-        let header = ` <tr><td class="t bg">Aika</td><td class="t bg">Hinta</td><td class="t bg">Ohjaus</td></tr>`;
+        let header = ` <tr><td class="t bg">Time</td><td class="t bg">Price</td><td class="t bg">Output</td></tr>`;
 
         if (s.p[dayIndex].ts == 0) {
           element.innerHTML = `${header}${notYetKnown}`;;
@@ -295,7 +297,7 @@
       console.error(err);
 
       clear();
-      qs("s-cmd").innerHTML = `Tila ei tiedossa (${err.message})`;
+      qs("s-cmd").innerHTML = `Status unknown (${err.message})`;
       qs("s-cmd").style.color = "red";
     }
   };
