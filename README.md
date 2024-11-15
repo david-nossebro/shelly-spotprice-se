@@ -11,6 +11,7 @@ Script uses API by [Elering](https://dashboard.elering.ee/api) without any other
 If you want to control the color of Shelly Plug Plus LED by electricity price, see [shelly-plug-nordpool-light](https://github.com/jisotalo/shelly-plug-nordpool-light).
 
 --- 
+This is an English version of the original script at [https://github.com/jisotalo/shelly-porssisahko](https://github.com/jisotalo/shelly-porssisahko). 
 
 **SUOMEKSI:** Skriptistä on suomenkielinen versio osoitteessa [https://github.com/jisotalo/shelly-porssisahko](https://github.com/jisotalo/shelly-porssisahko). 
 
