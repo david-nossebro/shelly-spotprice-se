@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 22.11.2024
+- Added check for Shelly time change
+  - If time changes more than 5 minutes, prices and logic are updated
+- Bug fix: After Shelly boot, the script had invalid time from the past for a while
+  - This caused issues with prices etc.
+  - Changed to use another workaround to check if clock is valid
+  - See [issue #33 (Finnish)](https://github.com/jisotalo/shelly-porssisahko/issues/33)
+- Bugfix: If active hour isn't found from price data, getting the prices again
+  - See [issue #33 (Finnish)](https://github.com/jisotalo/shelly-porssisahko/issues/33)
+- Bug fix: If max. price limit was smaller than always on limit, the status was displayed wrong. Control worked correctly.
+  - [See issue #31 (Finnish)](https://github.com/jisotalo/shelly-porssisahko/issues/31)
+
 ## [3.0.0] - 12.11.2024
 **NOTE:** Settings are lost when updating v.2 -> v.3.
 
