@@ -75,7 +75,7 @@
         
         qs("s-st").innerHTML = si.st === 9
           ? STATE_STR[si.st].replace("%s", formatDateTime(new Date(si.fCmdTs * 1000), false))
-          : STATE_STR[si.st] + (ci.inv ? " (inverted)" : "");
+          : STATE_STR[si.st] + (ci.i ? " (inverted)" : "");
 
         //Extended status for instance (by user scripts)
         if (si.str != "") {
@@ -262,7 +262,7 @@
             && !foff;
 
           //Invert
-          if (ci.inv) {
+          if (ci.i) {
             cmd = !cmd;
           }
 
