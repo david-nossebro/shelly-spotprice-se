@@ -58,13 +58,13 @@ This is an English version of the original script at [https://github.com/jisotal
     - [User script features](#user-script-features)
     - [Adjusting settings with a separate script (remotely)](#adjusting-settings-with-a-separate-script-remotely)
   - [FAQ](#faq)
+    - [Why the script isn't getting prices?](#why-the-script-isnt-getting-prices)
     - [How reliable is this script?](#how-reliable-is-this-script)
     - [Why I sometimes get HTTP error 503?](#why-i-sometimes-get-http-error-503)
     - [Why the device name says "not set"?](#why-the-device-name-says-not-set)
     - [How to use with Switch Add-On?](#how-to-use-with-switch-add-on)
     - [When the script reads the prices for tomorrow?](#when-the-script-reads-the-prices-for-tomorrow)
     - [Where are the settings saved to?](#where-are-the-settings-saved-to)
-    - [Why there is no price data?](#why-there-is-no-price-data)
     - [Why is the history length so short?](#why-is-the-history-length-so-short)
   - [Technical info](#technical-info)
     - [General](#general-1)
@@ -328,6 +328,20 @@ Example: Adjusting number of cheapest hours to `8h`.
 
 ## FAQ
 
+### Why the script isn't getting prices?
+
+Sometimes Elering might have API issues. It's important to set backup hours for situations like this.
+
+Check Diagnostics log in Shelly for errors. 
+You can open the Elering URL in web browser and see if the CSV file has valid data for 24 hours. If not, the script can't get the data either.
+
+![alt text](img/error-getting-prices.png)
+
+The address is similar to: [https://dashboard.elering.ee/api/nps/price/csv?fields=fi&start=2024-12-05T00:00:00%2b02:00&end=2024-12-05T23:59:59%2b02:00](https://dashboard.elering.ee/api/nps/price/csv?fields=fi&start=2024-12-05T00:00:00%2b02:00&end=2024-12-05T23:59:59%2b02:00)
+
+You can also check if Elering is offering valid price data: [https://dashboard.elering.ee/et/nps/price](https://dashboard.elering.ee/et/nps/price). If not, the script can't get the data either.
+
+
 ### How reliable is this script?
 
 The target is to create a script that can be installed once and then forgotten.
@@ -367,12 +381,6 @@ Shelly KVS memory (Advanced -> KVS). They are as JSON and can be freely edited m
 Script needs to be restarted for the changes to take effect. 
 
 ![alt text](img/kvs.png)
-
-### Why there is no price data?
-
-Sometimes Elering might have API issues. This is what the backup hours are for.
-
-Check Shelly diagnostics log and try again later.
 
 ### Why is the history length so short?
 
