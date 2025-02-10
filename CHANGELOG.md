@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 10.02.2025
+- History row is saved only if command changes
+- Bug fix: Manual output state was not shown in status page
+  - Thanks [https://github.com/jpsarin](https://github.com/jpsarin)!
+- Bug fix: When changing instance, the previous data fetch is cancelled (if exists)
+  - Hopefully fixes [issue #45 (Finnish)](https://github.com/jisotalo/shelly-porssisahko/issues/45)
+
 ## [3.1.1] - 24.11.2024
 - Bug fix: If inverted, the status wasn't displayed correctly
   - Thanks to [https://github.com/joomoz](https://github.com/joomoz)!
