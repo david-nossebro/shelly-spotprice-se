@@ -628,6 +628,15 @@ function logicRunNeeded(inst) {
  * @param {number} dayIndex 0 = today, 1 = tomorrow
  */
 function getPrices(dayIndex) {
+  if (_.c.c.g === "fi" || _.c.c.g === "ee" || _.c.c.g === "lv" || _.c.c.g === "lt") {
+    getPricesFinlandAndBaltic(dayIndex);
+  } else if(_.c.c.g === "SE1" || _.c.c.g === "SE2" || _.c.c.g === "SE3" || _.c.c.g === "SE4") {
+    getPricesSweden(dayIndex);
+  }
+}
+
+function getPricesFinlandAndBaltic(dayIndex) {
+  log("Fetching prices for " + _.c.c.g);
   try {
     log("fetching prices for day " + dayIndex)
     let now = new Date();
@@ -739,6 +748,145 @@ function getPrices(dayIndex) {
 
           //Calculate average and update timestamp
           _.s.p[dayIndex].avg = _.p[dayIndex].length > 0 ? (_.s.p[dayIndex].avg / _.p[dayIndex].length) : 0;
+          _.s.p[dayIndex].ts = epoch(now);
+
+          if (_.p[dayIndex].length < 23) {
+            //Let's assume that if we have data for at least 23 hours everything is OK
+            //This should take DST saving changes in account
+            //If we get less the prices may not be updated yet to elering API?
+            throw new Error("invalid data received");
+          }
+        } else {
+          throw new Error(err + "(" + msg + ") - " + JSON.stringify(res));
+        }
+
+      } catch (err) {
+        log("error getting prices: " + err);
+        _.s.errCnt += 1;
+        _.s.errTs = epoch();
+        _.s.p[dayIndex].ts = 0;
+        _.p[dayIndex] = [];
+      }
+
+      //Done (success or not)
+      //Run all logic again if prices are for today
+      if (dayIndex == 0) {
+        reqLogic();
+      }
+
+      loopRunning = false;
+      Timer.set(500, false, loop);
+    });
+
+  } catch (err) {
+    log("error getting prices: " + err);
+    _.s.errCnt += 1;
+    _.s.errTs = epoch();
+    _.s.p[dayIndex].ts = 0;
+    _.p[dayIndex] = [];
+
+    //Done (error)
+    //Run all logic again if prices are for today
+    if (dayIndex == 0) {
+      reqLogic();
+    }
+
+    loopRunning = false;
+    Timer.set(500, false, loop);
+  }
+}
+
+function getMonth(date) {
+  let month = date.getMonth() + 1;
+  let formattedMonth = (month < 10 ? '0' : '') + month; // Lägg till '0' om month < 10, annars ingenting
+
+  return formattedMonth;
+}
+
+function getPricesSweden(dayIndex) {
+  log("Fetching prices for " + _.c.c.g);
+
+  try {
+    log("fetching prices for day " + dayIndex)
+    let now = new Date();
+    updateTz(now);
+
+    let date = now; // Default to 'now'
+
+    if (dayIndex === 1) {
+      // If dayIndex is 1, set date to tomorrow at 00:00
+      date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    }
+ 
+    let req = {
+      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + getMonth(date) + "-" + date.getDate() + "_SE3.json",
+      timeout: 5,
+      ssl_ca: "*"
+    };
+
+    //Clearing variables to save memory
+    date = null;
+
+    Shelly.call("HTTP.GET", req, function (res, err, msg) {
+      req = null;
+      try {
+        if (err === 0 && res != null && res.code === 200 && res.body) {
+          //Clearing some fields to save memory
+          res.headers = null;
+          res.message = null;
+          msg = null;
+
+          _.p[dayIndex] = [];
+          _.s.p[dayIndex].avg = 0;
+          _.s.p[dayIndex].high = -999;
+          _.s.p[dayIndex].low = 999;
+
+          let listOfElectricityPrice = JSON.parse(res.body);
+          res.body = null;
+          
+          let totalPrice = 0;
+
+          for (let i = 0; i < listOfElectricityPrice.length; i++) {
+            let electricityPrice = listOfElectricityPrice[i];
+            let sekPerKwh = electricityPrice.SEK_per_kWh;
+            let timeStart = new Date(electricityPrice.time_start.slice(0, -5)); // Bug with handling timezone data on Shelly, so removed it.
+            let hour = timeStart.getHours();
+            let epoch = Math.floor(timeStart.getTime() / 1000);
+
+            // Add VAT (if possitive price)
+            if (sekPerKwh > 0) {
+              // Calculate multiplier: (100 + VAT%) / 100.0 (e.g., 1.25 for 25% VAT)
+              let vatMultiplier = (100 + _.c.c.vat) / 100.0;
+              sekPerKwh = sekPerKwh * vatMultiplier;
+            }
+
+            // Add transfer rate
+            if (hour >= 7 && hour < 22) {
+              //day
+              sekPerKwh += _.c.c.day;
+            } else {
+              //night
+              sekPerKwh += _.c.c.night;
+            }
+
+            _.p[dayIndex].push([epoch, sekPerKwh]);
+
+            if(_.s.p[dayIndex].high < sekPerKwh) {
+              _.s.p[dayIndex].high = sekPerKwh;
+            }
+
+            if(_.s.p[dayIndex].low > sekPerKwh) {
+              _.s.p[dayIndex].low = sekPerKwh;
+            }
+
+            totalPrice += sekPerKwh;
+          }
+
+          //Again to save memory..
+          res = null;
+
+          //Calculate average and update timestamp
+          _.s.p[dayIndex].avg = listOfElectricityPrice.length > 0 ? (totalPrice / listOfElectricityPrice.length) : 0;
           _.s.p[dayIndex].ts = epoch(now);
 
           if (_.p[dayIndex].length < 23) {

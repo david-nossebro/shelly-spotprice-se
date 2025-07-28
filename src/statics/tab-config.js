@@ -31,6 +31,15 @@
   }
 
   /**
+   * Helper to update currency unit based on country
+   * @param {string} countryCode 
+   */
+  let updateCurrency = (countryCode) => {
+    const currency = (countryCode || "").startsWith("SE") ? "SEK/kWh" : "c/kWh";
+    doc.querySelectorAll(".price-unit").forEach(e => e.textContent = currency);
+  }
+
+  /**
    * Helper to set radio button value
    * 
    * @param {*} name 
@@ -93,6 +102,7 @@
       qs("cfg").style.display = 'block';
 
       qs("g").value = c.g;
+      updateCurrency(c.g);
       qs("vat").value = c.vat;
       qs("day").value = c.day;
       qs("night").value = c.night;
@@ -258,4 +268,5 @@
   qs("save").addEventListener("click", save);
   qs("force").addEventListener("click", force);
   qs("m2-per").addEventListener("change", (e) => checkCustomPeriodDisplay(e.target.value));
+  qs("g").addEventListener("change", (e) => updateCurrency(e.target.value));
 }

@@ -62,6 +62,8 @@
       /** instance config */
       let ci = d.ci;
 
+      let priceUnit = d.c.g.startsWith("SE") ? "SEK/kWh" : "c/kWh"
+
       //If instance is enabled (otherwise just update price lists)
       if (ci.en) {
         qs("s-cmd").innerHTML = si.cmd ? "ON" : "OFF";
@@ -70,7 +72,7 @@
         qs("s-mode").innerHTML = MODE_STR[ci.mode];
 
         qs("s-now").innerHTML = d.p.length > 0
-          ? `${s.p[0].now.toFixed(2)} c/kWh`
+          ? `${s.p[0].now.toFixed(2)} ${priceUnit}`
           : "";
         
         qs("s-st").innerHTML = si.st === 9
@@ -122,9 +124,9 @@
 
         return `${header}
         <tr>
-          <td>${priceInfo.avg.toFixed(2)} c/kWh</td>
-          <td>${priceInfo.low.toFixed(2)} c/kWh</td>
-          <td>${priceInfo.high.toFixed(2)} c/kWh</td>
+          <td>${priceInfo.avg.toFixed(2)} ${priceUnit}</td>
+          <td>${priceInfo.low.toFixed(2)} ${priceUnit}</td>
+          <td>${priceInfo.high.toFixed(2)} ${priceUnit}</td>
         </tr>`;
       }
 
@@ -283,7 +285,7 @@
           element.innerHTML += 
           `<tr style="${date.getHours() === new Date().getHours() && dayIndex == 0 ? `font-weight:bold;` : ``}${(bg ? "background:#ededed;" : "")}">
             <td class="fit">${formatTime(date, false)}</td>
-            <td>${row[1].toFixed(2)} c/kWh</td>
+            <td>${row[1].toFixed(2)} ${priceUnit}</td>
             <td>${cmd ? "&#x2714;" : ""}${fon || foff ? `**` : ""}</td>
           </tr>`;
         }

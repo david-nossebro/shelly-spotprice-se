@@ -22,6 +22,10 @@
           <option value="ee">Estonia</option>
           <option value="lv">Latvia</option>
           <option value="lt">Lithuania</option>
+          <option value="SE1">Sweden (SE01)</option>
+          <option value="SE2">Sweden (SE02)</option>
+          <option value="SE3">Sweden (SE03)</option>
+          <option value="SE4">Sweden (SE04)</option>
         </select>
       </td>
     </tr>
@@ -34,9 +38,9 @@
     <tr>
       <td>Transfer fees</td>
       <td>
-        07-22: <input type="text" id="day" size="3"> c/kWh
+        07-22: <input type="text" id="day" size="3"> <span class="price-unit">c/kWh</span>
         <div class="mt10">
-          22-07: <input type="text" id="night" size="3"> c/kWh
+          22-07: <input type="text" id="night" size="3"> <span class="price-unit">c/kWh</span>
         </div>
       </td>
     </tr>
@@ -126,7 +130,7 @@
     <tr>
       <td class="w180">Price limit</td>
       <td>
-        <input type="text" id="m1-lim" size="3"> c/kWh
+        <input type="text" id="m1-lim" size="3"> <span class="price-unit">c/kWh</span>
       </td>
     </tr>
   </table>
@@ -186,13 +190,13 @@
     <tr>
       <td>Always on limit</td>
       <td>
-        <input type="text" size="3" id="m2-lim"> c/kWh
+        <input type="text" size="3" id="m2-lim"> <span class="price-unit">c/kWh</span>
       </td>
     </tr>
     <tr>
       <td>Max. price limit</td>
       <td>
-        <input type="text" size="3" id="m2-m"> c/kWh
+        <input type="text" size="3" id="m2-m"> <span class="price-unit">c/kWh</span>
       </td>
     </tr>
   </table>
