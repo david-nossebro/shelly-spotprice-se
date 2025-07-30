@@ -1,21 +1,15 @@
-# shelly-porssisahko - Nordpool electricity spot price control for Shelly devices
+# shelly-spotprice-se - Swedish nordpool electricity spot price control for Shelly devices
 [![License](https://img.shields.io/badge/License-AGPLv3-orange)](https://choosealicense.com/licenses/agpl-3.0/)
-[![GitHub](https://img.shields.io/badge/View%20on-GitHub-brightgreen)](https://github.com/jisotalo/shelly-porssisahko-en)
-
-*Pörssisähkö: a Finnish word for electric spot price*
+[![GitHub](https://img.shields.io/badge/View%20on-GitHub-brightgreen)](https://github.com/david-nossebro/shelly-spotprice-se)
 
 A free open source script for Shelly devices to control outputs by Nordpool electricity spot price. Script runs its own web server and saves its settings to Shelly's memory. Fully configured and monitored using a web browser.
 
-Script uses API by [Elering](https://dashboard.elering.ee/api) without any other services. No need to register anywhere, it just works.
+A fork of [shelly-porssisahko-en](https://github.com/jisotalo/shelly-porssisahko-en) created for the Finnish and Baltic market by [jitsalo](https://github.com/jisotalo). Check it out if that´s where you´re based!
 
-If you want to control the color of Shelly Plug Plus LED by electricity price, see [shelly-plug-nordpool-light](https://github.com/jisotalo/shelly-plug-nordpool-light).
+Script uses API by [elprisetjustnu.se](https://www.elprisetjustnu.se/elpris-api) without any other services. No need to register anywhere, it just works.
 
 --- 
-This is an English version of the original script at [https://github.com/jisotalo/shelly-porssisahko](https://github.com/jisotalo/shelly-porssisahko). 
-
-**SUOMEKSI:** Skriptistä on suomenkielinen versio osoitteessa [https://github.com/jisotalo/shelly-porssisahko](https://github.com/jisotalo/shelly-porssisahko). 
-
----
+TODO - Create new gif
 
 ![alt text](img/shelly-porssisahko.gif)
 
@@ -35,7 +29,7 @@ This is an English version of the original script at [https://github.com/jisotal
 * Possible to configure and extend by user scripts
 
 ## Table of contents
-- [shelly-porssisahko - Nordpool electricity spot price control for Shelly devices](#shelly-porssisahko---nordpool-electricity-spot-price-control-for-shelly-devices)
+- [shelly-spotprice-se - Swedish nordpool electricity spot price control for Shelly devices](#shelly-spotprice-se---Swedish-nordpool-electricity-spot-price-control-for-shelly-devices)
   - [Features](#features)
   - [Table of contents](#table-of-contents)
   - [Changelog](#changelog)
@@ -73,17 +67,13 @@ This is an English version of the original script at [https://github.com/jisotal
 
 ## Changelog
 
- See [CHANGELOG.md](https://github.com/jisotalo/shelly-porssisahko-en/blob/master/CHANGELOG.md) for version history.
-
-Old version can be found from [Releases](https://github.com/jisotalo/shelly-porssisahko-en/releases). Download the desired version archive and copy the contents of `dist/shelly-porssisahko.js`.
+ See [CHANGELOG.md](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/CHANGELOG.md) for version history.
 
 ## Support
 
-If this script is useful, you might want to buy me a coffee! This is purely a hobby project.
+This project is a fork of [shelly-porssisahko-en](https://github.com/jisotalo/shelly-porssisahko-en). If you want to buy someone a coffe, head over there. :coffee: :hearts:
 
-<a href="https://www.buymeacoffee.com/jisotalo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
-[![Support](https://img.shields.io/badge/Support_with-PayPal-yellow)](https://www.paypal.com/donate/?business=KUWBXXCVGZZME&no_recurring=0&currency_code=EUR)
+If you want to support this projekt, reach out and help with coding, testing or documentation. If you found a bug or have ideas on how to improve, write an [issue](https://github.com/david-nossebro/shelly-spotprice-se/issues)
  
 ## Installation
 
@@ -97,7 +87,7 @@ If this script is useful, you might want to buy me a coffee! This is purely a ho
     ![alt text](img/install-1.png)
 
 5. Click **Configure URL**.
-6. Enter address `https://raw.githubusercontent.com/jisotalo/shelly-porssisahko-en/master/shelly-library.json` and click **Save**.
+6. Enter address `https://raw.githubusercontent.com/david-nossebro/shelly-spotprice-se/master/shelly-library.json` and click **Save**.
 
     ![alt text](img/install-2.png)
 
@@ -131,7 +121,7 @@ If this script is useful, you might want to buy me a coffee! This is purely a ho
 
 If you want to install manually, with the Shelly Smart Control app or [control.shelly.cloud](https://control.shelly.cloud), you can download the script from the following URL:
 
-[https://raw.githubusercontent.com/jisotalo/shelly-porssisahko-en/master/dist/shelly-porssisahko.js](https://raw.githubusercontent.com/jisotalo/shelly-porssisahko-en/master/dist/shelly-porssisahko.js). 
+[https://raw.githubusercontent.com/david-nossebro/shelly-spotprice-se/master/dist/shelly-spotprice-se.js](https://raw.githubusercontent.com/david-nossebro/shelly-spotprice-se/master/dist/shelly-spotprice-se.js). 
 
 ## Updating script
 
@@ -292,11 +282,11 @@ User scripts can be used to add features. See some examples below.
 
 | Script                                                                                                                                             | Description                                                                                                                                                                                                                                                                        |
 | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`shelly-porssisahko-open-meteo-api.js`](https://github.com/jisotalo/shelly-porssisahko/blob/master/dist/shelly-porssisahko-open-meteo-api.js)     | Fetches coldest temperature for the day and uses it to adjust number of cheapest hours                                                                                                                                                                                             |
-| [`shelly-porssisahko-addon-temp-hours.js`](https://github.com/jisotalo/shelly-porssisahko/blob/master/dist/shelly-porssisahko-addon-temp-hours.js) | Adjusts number of cheapest hours based on Shelly Plus Addon temperature measurement                                                                                                                                                                                                |
-| [`shelly-porssisahko-addon-temp.js`](https://github.com/jisotalo/shelly-porssisahko/blob/master/dist/shelly-porssisahko-addon-temp.js)             | Overrides the output based on Shelly Plus Addon temperature measurement, if needed.                                                                                                                                                                                                |
-| [`shelly-porssisahko-ht-sensor-temp.js`](https://github.com/jisotalo/shelly-porssisahko/blob/master/dist/shelly-porssisahko-ht-sensor-temp.js)     | Adjusts number of cheapest hours based on Shelly H&T temperature measurement                                                                                                                                                                                                       |
-| [`shelly-porssisahko-config.js`](https://github.com/jisotalo/shelly-porssisahko/blob/master/dist/shelly-porssisahko-config.js)                     | Script that is installed in parallel to the main script. Used to adjust settings without access to the control panel (e.g. remotely with Shelly Smart Control app) See [Adjusting settings with a separate script (remotely)](#adjusting-settings-with-a-separate-script-remotely) |
+| [`shelly-spotprice-se-open-meteo-api.js`](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/dist/shelly-spotprice-se-open-meteo-api.js)     | Fetches coldest temperature for the day and uses it to adjust number of cheapest hours                                                                                                                                                                                             |
+| [`shelly-spotprice-se-addon-temp-hours.js`](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/dist/shelly-spotprice-se-addon-temp-hours.js) | Adjusts number of cheapest hours based on Shelly Plus Addon temperature measurement                                                                                                                                                                                                |
+| [`shelly-spotprice-se-addon-temp.js`](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/dist/shelly-spotprice-se-addon-temp.js)             | Overrides the output based on Shelly Plus Addon temperature measurement, if needed.                                                                                                                                                                                                |
+| [`shelly-spotprice-se-ht-sensor-temp.js`](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/dist/shelly-spotprice-se-ht-sensor-temp.js)     | Adjusts number of cheapest hours based on Shelly H&T temperature measurement                                                                                                                                                                                                       |
+| [`shelly-spotprice-se-config.js`](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/dist/shelly-spotprice-se-config.js)                     | Script that is installed in parallel to the main script. Used to adjust settings without access to the control panel (e.g. remotely with Shelly Smart Control app) See [Adjusting settings with a separate script (remotely)](#adjusting-settings-with-a-separate-script-remotely) |
 
 ### User script features
 
@@ -317,7 +307,7 @@ Script calls the following functions if they are available. See above scripts fo
 This method can be used to change settings remotely outside the local network (Shelly Smart Control app etc.)
 
 
-1. Install with the library or manually [`shelly-porssisahko-config.js`](https://github.com/jisotalo/shelly-porssisahko-en/blob/master/dist/shelly-porssisahko-config.js) in parallel to the main script (keep main script running).
+1. Install with the library or manually [`shelly-spotprice-se-config.js`](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/dist/shelly-spotprice-se-config.js) in parallel to the main script (keep main script running).
 2. Remove comments (`//`) from the settings you want to adjust. All others are kept as-is.
 3. Click **save** and start the script. It will stop automatically.
 
@@ -330,25 +320,18 @@ Example: Adjusting number of cheapest hours to `8h`.
 
 ### Why the script isn't getting prices?
 
-Sometimes Elering might have API issues. It's important to set backup hours for situations like this.
+Sometimes elprisetjustnu.se might have API issues. It's important to set backup hours for situations like this.
 
 Check Diagnostics log in Shelly for errors. 
-You can open the Elering URL in web browser and see if the CSV file has valid data for 24 hours. If not, the script can't get the data either.
+You can open the elprisetjustnu.se URL in web browser and see if the JSON file has valid data for 24 hours. If not, the script can't get the data either.
 
 ![alt text](img/error-getting-prices.png)
 
-The address is similar to: [https://dashboard.elering.ee/api/nps/price/csv?fields=fi&start=2024-12-05T00:00:00%2b02:00&end=2024-12-05T23:59:59%2b02:00](https://dashboard.elering.ee/api/nps/price/csv?fields=fi&start=2024-12-05T00:00:00%2b02:00&end=2024-12-05T23:59:59%2b02:00)
-
-You can also check if Elering is offering valid price data: [https://dashboard.elering.ee/et/nps/price](https://dashboard.elering.ee/et/nps/price). If not, the script can't get the data either.
-
+The address is similar to: [https://www.elprisetjustnu.se/api/v1/prices/2025/07-01_SE3.json](https://www.elprisetjustnu.se/api/v1/prices/2025/07-01_SE3.json)
 
 ### How reliable is this script?
 
 The target is to create a script that can be installed once and then forgotten.
-
-Personally, the v.2 has been running nicely for over 100 days straight.
-
-![alt text](img/uptime.png)
 
 ### Why I sometimes get HTTP error 503?
 
@@ -372,7 +355,7 @@ Use that value as `Shelly outputs` setting in this script.
 
 ### When the script reads the prices for tomorrow?
 
-At 15:00 - Elering offers the new prices at around 14:30.
+At 14:00 - elprisetjustnu.se offers the new prices at around 13:00, but to be sure that the prices are present we fetch them an hour later.
 
 ### Where are the settings saved to?
 
@@ -397,18 +380,6 @@ Script needs to be restarted for the changes to take effect.
 * Shelly is low on memory so many things are done in an ugly manner
 * Some variables are at global scope because Shelly js engine stack issues
 * The final script is done by "building" (minimizing, base64 encoding, gzipping)
-* Use [Eleringin CSV API](https://dashboard.elering.ee/assets/api-doc.html#/nps-controller/getPriceAsCSVUsingGET) to save memory (instead of JSON)
-* v. 3.0.0 uses around 18kb of Shelly memory (plenty of space left for other scripts)
-
-```
-script:1: {
-  id: 1,
-  running: true,
-  mem_used: 11900,
-  mem_peak: 18116,
-  mem_free: 13286
-},
-```
 
 ### Building the script
 
@@ -420,6 +391,6 @@ script:1: {
 
 ## License
 
-GNU Affero General Public License v3.0 - [LICENSE.txt](https://github.com/jisotalo/shelly-porssisahko-en/blob/master/LICENSE.txt)
+GNU Affero General Public License v3.0 - [LICENSE.txt](https://github.com/david-nossebro/shelly-spotprice-se/blob/master/LICENSE.txt)
 
 Note that there is no warranty, use at your own risk. Tab system is based on [this example](https://alvarotrigo.com/blog/html-css-tabs/).
