@@ -314,7 +314,7 @@ let updateLoop = async () => {
       state = res.data;
 
       //Updating title
-      doc.title = (state.s.dn ? state.s.dn + " - " : "") + "Pörssisähkö";
+      doc.title = (state.s.dn ? state.s.dn + " - " : "") + "Spotprice SE";
 
       //Updating instances to dropdown
       qs("inst").innerHTML = state.c.names.map((n, i) => `<option value="${i}">Control #${(i + 1)}: ${n}</option>`)

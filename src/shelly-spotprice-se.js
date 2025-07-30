@@ -217,8 +217,8 @@ let loopRunning = false;
  * @returns 
  */
 function getKvsKey(inst) {
-  let key = "porssi";
-
+  let key = "sptprc-se";
+  
   if (inst >= 0) {
     key = key + "-" + (inst + 1);
   }
@@ -624,18 +624,6 @@ function logicRunNeeded(inst) {
 }
 
 /**
- * Get formatted month
- * @param {Date} date 
- * @returns {String}  Month with two letters 01, 02, ..., 11 etc. 
- */
-function getFormattedMonth(date) {
-  let month = date.getMonth() + 1;
-  let formattedMonth = (month < 10 ? '0' : '') + month; // Lägg till '0' om month < 10, annars ingenting
-
-  return formattedMonth;
-}
-
-/**
 
  * Gets prices for selected day
  * 
@@ -645,7 +633,7 @@ function getPrices(dayIndex) {
   log("Fetching prices for " + _.c.c.g);
 
   try {
-    log("fetching prices for day " + dayIndex)
+    log("fetching prices for day " + dayIndex);
     let now = new Date();
     updateTz(now);
 
@@ -655,12 +643,18 @@ function getPrices(dayIndex) {
       // If dayIndex is 1, set date to tomorrow at 00:00
       date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
- 
+
+    let month = date.getMonth() + 1;
+    let formattedMonth = (month < 10 ? "0" : "") + month;
+    let formattedDate = (date.getDate() < 10 ? "0" : "") + date.getDate();
+
     let req = {
-      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + getFormattedMonth(date) + "-" + getFormattedDay(date) + "_SE3.json",
+      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + formattedMonth + "-" + formattedDate + "_"+_.c.c.g+".json",
       timeout: 5,
       ssl_ca: "*"
     };
+
+    log("Request url: " + req.url)
 
     //Clearing variables to save memory
     date = null;

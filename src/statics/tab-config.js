@@ -37,7 +37,7 @@
    * @param {string} countryCode 
    */
   let updateCurrency = (countryCode) => {
-    const currency = (countryCode || "").startsWith("SE") ? "SEK/kWh" : "c/kWh";
+    const currency = "SEK/kWh";
     doc.querySelectorAll(".price-unit").forEach(e => e.textContent = currency);
   }
 
@@ -224,8 +224,8 @@
       DBG(me(), "Settings to save:", c, ci);
 
       //Saving settings (both common and instance)
-      let res = await getData(`${URL}/rpc/KVS.Set?key="porssi-${(inst + 1)}"&value="${encodeURIComponent(JSON.stringify(ci))}"`);     
-      let res2 = await getData(`${URL}/rpc/KVS.Set?key="porssi"&value="${encodeURIComponent(JSON.stringify(c))}"`);
+      let res = await getData(`${URL}/rpc/KVS.Set?key="sptprc-se-${(inst + 1)}"&value="${encodeURIComponent(JSON.stringify(ci))}"`);     
+      let res2 = await getData(`${URL}/rpc/KVS.Set?key="sptprc-se"&value="${encodeURIComponent(JSON.stringify(c))}"`);
 
       if (res.code != 200 || res2.code != 200) {
         throw new Error(res.txt + " | " + res2.txt);
