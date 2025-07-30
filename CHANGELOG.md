@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 30.07.2025
+- Adjusted [shelly-porssisahko-en](https://github.com/jisotalo/shelly-porssisahko-en) to the Swedish market and created new project [shelly-spotprice-se](https://github.com/david-nossebro/shelly-spotprice-se) as a fork.
+
 ## [3.2.0] - 10.02.2025
 - History row is saved only if command changes
 - Bug fix: Manual output state was not shown in status page
