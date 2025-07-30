@@ -693,7 +693,7 @@ function getPrices(dayIndex) {
             }
 
             // Add transfer rate
-            if (hour >= 7 && hour < 22) {
+            if (hour >= 6 && hour < 22) {
               //day
               sekPerKwh += _.c.c.day;
             } else {
