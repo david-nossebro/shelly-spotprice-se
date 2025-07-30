@@ -16,11 +16,12 @@
 
 body,
 a {
-  color: #ecf0f1;
+  color: #FDFEFE;
 }
 
+
 body {
-  background: #2c3e50;
+  background: #002B45;
   line-height: 1.4em;
   font-size: 0.9em;
   font-family: Verdana;
@@ -47,7 +48,7 @@ body {
 
 .tabs {
   position: relative;
-  background: #1abc9c;
+  background: #006aa7;
 }
 
 .tabs::before,
@@ -73,7 +74,7 @@ body {
   display: block;
   line-height: 2.75em;
   padding: 0 1.2em;
-  border-right: 2px solid #16a085;
+  border-right: 2px solid #004f8b;
   cursor: pointer;
 }
 
@@ -85,13 +86,13 @@ body {
   left: 0;
   padding: 1rem;
   background: #fff;
-  color: #2c3e50;
+  color: #002B45;
   opacity: 0;
 }
 
 .ts:checked+.tab-label {
   background: #fff;
-  color: #2c3e50;
+  color: #002B45;
   border: 0;
 }
 
@@ -109,8 +110,8 @@ body {
   width: 1.2rem;
   height: 1.2rem;
   border: 0.2rem solid transparent;
-  border-color: #1abc9c;
-  border-top-color: white;
+  border-color: #006aa7;
+  border-top-color: #FFC72C;
   border-radius: 50%;
   animation: spn 1s linear infinite;
   display: inline-block;
@@ -127,7 +128,7 @@ table.cc>tbody>tr>td:first-child,
 table.sm tr:first-child {
   font-weight: bold;
   vertical-align: top;
-  background: #1abc9c;
+  background: #006aa7;
 }
 
 .flx-mob-col {
@@ -163,7 +164,7 @@ table.sm tr:first-child {
   }
 
   table.m tr:first-child {
-    border-top: 1px black solid;
+    border-top: 1px solid #004f8b;
   }
 
   .flx-mob-col {
@@ -182,7 +183,7 @@ table {
 }
 
 td {
-  border: 1px black solid;
+  border: 1px solid #004f8b;
   padding: 5px;
 }
 
@@ -218,10 +219,23 @@ td {
 .b,
 #s-cmd {
   font-weight: bold;
+  color: #FFC72C; /* Gyllengul färg för extra viktig text */
 }
 
 input[type=button] {
   font-size: 1.1em;
+  background-color: #FFC72C; /* Gyllengul bakgrund */
+  color: #002B45; /* Mörkblå text för kontrast */
+  border: 1px solid #e0b028; /* Något mörkare gul kant */
+  border-radius: 4px; /* Mjuka hörn */
+  padding: 8px 16px; /* Mer luft */
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease; /* Mjuk övergång */
+}
+
+input[type=button]:hover {
+  background-color: #e0b028; /* Mörkare vid hover */
 }
 
 table.sm {
