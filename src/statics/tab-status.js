@@ -62,7 +62,7 @@
       /** instance config */
       let ci = d.ci;
 
-      let priceUnit = d.c.g.startsWith("SE") ? "SEK/kWh" : "c/kWh"
+      let priceUnit = "SEK/kWh"
 
       //If instance is enabled (otherwise just update price lists)
       if (ci.en) {

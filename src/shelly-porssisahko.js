@@ -46,9 +46,9 @@ const CNST = {
     /** Default config for common settings */
     COM: {
       /** Group (country) to get prices from */
-      g: 'fi',
+      g: 'SE3',
       /** VAT added to spot price [%] */
-      vat: 25.5,
+      vat: 25,
       /** Day (07...22) transfer price [c/kWh] */
       day: 0,
       /** Night (22...07) transfer price [c/kWh] */
@@ -623,187 +623,23 @@ function logicRunNeeded(inst) {
 }
 
 /**
- * Gets prices for selected day
- * 
- * @param {number} dayIndex 0 = today, 1 = tomorrow
+ * Get formatted month
+ * @param {Date} date 
+ * @returns {String}  Month with two letters 01, 02, ..., 11 etc. 
  */
-function getPrices(dayIndex) {
-  if (_.c.c.g === "fi" || _.c.c.g === "ee" || _.c.c.g === "lv" || _.c.c.g === "lt") {
-    getPricesFinlandAndBaltic(dayIndex);
-  } else if(_.c.c.g === "SE1" || _.c.c.g === "SE2" || _.c.c.g === "SE3" || _.c.c.g === "SE4") {
-    getPricesSweden(dayIndex);
-  }
-}
-
-function getPricesFinlandAndBaltic(dayIndex) {
-  log("Fetching prices for " + _.c.c.g);
-  try {
-    log("fetching prices for day " + dayIndex)
-    let now = new Date();
-    updateTz(now);
-
-    let date = dayIndex == 1
-      ? new Date(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() + 24 * 60 * 60 * 1000) //tomorrow at 00:00
-      : now;
-
-    let start = date.getFullYear()
-      + "-"
-      + (date.getMonth() < 9 ? "0" + (date.getMonth() + 1) : (date.getMonth() + 1))
-      + "-"
-      + (getDate(date) < 10 ? "0" + getDate(date) : getDate(date))
-      + "T00:00:00"
-      + _.s.tz.replace("+", "%2b"); //URL encode the + character
-
-    let end = start.replace("T00:00:00", "T23:59:59");
-
-    let req = {
-      url: "https://dashboard.elering.ee/api/nps/price/csv?fields=" + _.c.c.g + "&start=" + start + "&end=" + end,
-      timeout: 5,
-      ssl_ca: "*"
-    };
-
-    //Clearing variables to save memory
-    now = null;
-    start = null;
-    end = null;
-
-    Shelly.call("HTTP.GET", req, function (res, err, msg) {
-      req = null;
-
-      try {
-        if (err === 0 && res != null && res.code === 200 && res.body_b64) {
-          //Clearing some fields to save memory
-          res.headers = null;
-          res.message = null;
-          msg = null;
-
-          _.p[dayIndex] = [];
-          _.s.p[dayIndex].avg = 0;
-          _.s.p[dayIndex].high = -999;
-          _.s.p[dayIndex].low = 999;
-
-          //Converting base64 to text
-          res.body_b64 = atob(res.body_b64);
-
-          //Discarding header
-          res.body_b64 = res.body_b64.substring(res.body_b64.indexOf("\n") + 1);
-
-          let activePos = 0;
-
-          while (activePos >= 0) {
-            res.body_b64 = res.body_b64.substring(activePos);
-            activePos = 0;
-
-            let row = [0, 0];
-            activePos = res.body_b64.indexOf("\"", activePos) + 1;
-
-            if (activePos === 0) {
-              //" character not found -> end of data
-              break;
-            }
-
-            //epoch
-            row[0] = Number(res.body_b64.substring(activePos, res.body_b64.indexOf("\"", activePos)));
-
-            //skip "; after timestamp
-            activePos = res.body_b64.indexOf("\"", activePos) + 2;
-
-            //price
-            activePos = res.body_b64.indexOf(";\"", activePos) + 2;
-            row[1] = Number(res.body_b64.substring(activePos, res.body_b64.indexOf("\"", activePos)).replace(",", "."));
-
-            //Converting price to c/kWh and adding VAT to price
-            row[1] = row[1] / 10.0 * (100 + (row[1] > 0 ? _.c.c.vat : 0)) / 100.0;
-
-            //Add transfer fees (if any)
-            let hour = new Date(row[0] * 1000).getHours();
-
-            if (hour >= 7 && hour < 22) {
-              //day
-              row[1] += _.c.c.day;
-            } else {
-              //night
-              row[1] += _.c.c.night;
-            }
-
-            //Adding and calculating stuff
-            _.p[dayIndex].push(row);
-
-            _.s.p[dayIndex].avg += row[1];
-
-            if (row[1] > _.s.p[dayIndex].high) {
-              _.s.p[dayIndex].high = row[1];
-            }
-
-            if (row[1] < _.s.p[dayIndex].low) {
-              _.s.p[dayIndex].low = row[1];
-            }
-
-            //find next row
-            activePos = res.body_b64.indexOf("\n", activePos);
-          }
-
-          //Again to save memory..
-          res = null;
-
-          //Calculate average and update timestamp
-          _.s.p[dayIndex].avg = _.p[dayIndex].length > 0 ? (_.s.p[dayIndex].avg / _.p[dayIndex].length) : 0;
-          _.s.p[dayIndex].ts = epoch(now);
-
-          if (_.p[dayIndex].length < 23) {
-            //Let's assume that if we have data for at least 23 hours everything is OK
-            //This should take DST saving changes in account
-            //If we get less the prices may not be updated yet to elering API?
-            throw new Error("invalid data received");
-          }
-        } else {
-          throw new Error(err + "(" + msg + ") - " + JSON.stringify(res));
-        }
-
-      } catch (err) {
-        log("error getting prices: " + err);
-        _.s.errCnt += 1;
-        _.s.errTs = epoch();
-        _.s.p[dayIndex].ts = 0;
-        _.p[dayIndex] = [];
-      }
-
-      //Done (success or not)
-      //Run all logic again if prices are for today
-      if (dayIndex == 0) {
-        reqLogic();
-      }
-
-      loopRunning = false;
-      Timer.set(500, false, loop);
-    });
-
-  } catch (err) {
-    log("error getting prices: " + err);
-    _.s.errCnt += 1;
-    _.s.errTs = epoch();
-    _.s.p[dayIndex].ts = 0;
-    _.p[dayIndex] = [];
-
-    //Done (error)
-    //Run all logic again if prices are for today
-    if (dayIndex == 0) {
-      reqLogic();
-    }
-
-    loopRunning = false;
-    Timer.set(500, false, loop);
-  }
-}
-
-function getMonth(date) {
+function getFormattedMonth(date) {
   let month = date.getMonth() + 1;
   let formattedMonth = (month < 10 ? '0' : '') + month; // Lägg till '0' om month < 10, annars ingenting
 
   return formattedMonth;
 }
 
-function getPricesSweden(dayIndex) {
+/**
+ * Gets prices for selected day
+ * 
+ * @param {number} dayIndex 0 = today, 1 = tomorrow
+ */
+function getPrices(dayIndex) {
   log("Fetching prices for " + _.c.c.g);
 
   try {
@@ -819,7 +655,7 @@ function getPricesSweden(dayIndex) {
     }
  
     let req = {
-      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + getMonth(date) + "-" + date.getDate() + "_SE3.json",
+      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + getFormattedMonth(date) + "-" + date.getDate() + "_SE3.json",
       timeout: 5,
       ssl_ca: "*"
     };
