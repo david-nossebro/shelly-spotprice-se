@@ -541,10 +541,10 @@ function pricesNeeded(dayIndex) {
     /*
     Getting prices for tomorrow if
       - we have a valid time
-      - clock is past 15:00 local time (NOTE: Elering seems to have prices after 14.30 LOCAL time, no matter is it DST or not)
+      - clock is past 14:00 local time (NOTE: elprisetjustnu.se have prices after 13:00 most days, so 14:00 should be safe)
       - we don't have prices
     */
-    res = _.s.timeOK && _.s.p[1].ts === 0 && now.getHours() >= 15;
+    res = _.s.timeOK && _.s.p[1].ts === 0 && now.getHours() >= 14;
 
   } else {
     /*
@@ -558,6 +558,7 @@ function pricesNeeded(dayIndex) {
     if (dateChanged) {
       _.s.p[1].ts = 0;
       _.p[1] = [];
+
     }
 
     res = _.s.timeOK && (_.s.p[0].ts == 0 || dateChanged);
@@ -635,6 +636,7 @@ function getFormattedMonth(date) {
 }
 
 /**
+
  * Gets prices for selected day
  * 
  * @param {number} dayIndex 0 = today, 1 = tomorrow
@@ -655,7 +657,7 @@ function getPrices(dayIndex) {
     }
  
     let req = {
-      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + getFormattedMonth(date) + "-" + date.getDate() + "_SE3.json",
+      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + getFormattedMonth(date) + "-" + getFormattedDay(date) + "_SE3.json",
       timeout: 5,
       ssl_ca: "*"
     };
