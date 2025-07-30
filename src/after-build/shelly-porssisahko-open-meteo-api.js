@@ -9,8 +9,8 @@
  * 
  * After that, edit the logic below to your liking
  */
-let LATITUDE = "61.4991";
-let LONGITUDE = "23.7871";
+let LATITUDE = "59.5342";
+let LONGITUDE = "13.6246";
 
 // What control is fine-tuned (0 = control #1, 1 = control #2 etc.)
 let INSTANCE = 0;
@@ -94,8 +94,14 @@ function USER_OVERRIDE(inst, cmd, callback) {
       return;
     }
 
+    // Documentation on API can be found here: https://open-meteo.com/en/docs
+    // Interesting parameters for different data might be:
+    // daily=temperature_2m_max
+    // daily=temperature_2m_min
+    // daily=temperature_2m_mean
+    // daily=apparent_temperature_mean
     let req = {
-      url: "https://api.open-meteo.com/v1/forecast?latitude=" + LATITUDE + "&longitude=" + LONGITUDE + "&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1",
+      url: "https://api.open-meteo.com/v1/forecast?latitude=" + LATITUDE + "&longitude=" + LONGITUDE + "&daily=apparent_temperature_mean&timezone=auto&forecast_days=1",
       timeout: 5,
       ssl_ca: "*"
     };
@@ -111,10 +117,11 @@ function USER_OVERRIDE(inst, cmd, callback) {
           res.body = null;
 
           // Check if the response is valid
-          if (data.daily.temperature_2m_min != undefined && data.daily.temperature_2m_max != undefined) {
+          if (data.daily.apparent_temperature_mean != undefined) {
             // Now we have the lowest and highest temperature for today
-            tempData.min = data.daily.temperature_2m_min[0];
-            tempData.max = data.daily.temperature_2m_max[0];
+            //tempData.min = data.daily.temperature_2m_min[0];
+            //tempData.max = data.daily.temperature_2m_max[0];
+            tempData.avg = data.daily.apparent_temperature_mean[0];
 
             console.log("Temperatures:", tempData);
 
@@ -123,36 +130,58 @@ function USER_OVERRIDE(inst, cmd, callback) {
             // edit as you wish
             //------------------------------
 
-            // Change the number of heating hours and minutes based on the lowest temperature of the day
-            if (tempData.min <= -15) {
-              // Lowest during the day below -15 °C
+            
+            // Set the temperature based on the apparant_avg temperature 
+            if (tempData.avg > 10) {
+              hours = 1;
+              minutes = 60;
+            } else if (tempData.avg <= -50) {
+              hours = 24;
+              minutes = 60;
+            } else if (tempData.avg <= -45) {
+              hours = 22;
+              minutes = 60;
+            } else if (tempData.avg <= -40) {
+              hours = 20;
+              minutes = 60;
+            } else if (tempData.avg <= -35) {
+              hours = 18;
+              minutes = 60;
+            } else if (tempData.avg <= -30) {
+              hours = 16;
+              minutes = 60;
+            } else if (tempData.avg <= -25) {
+              hours = 14;
+              minutes = 60;
+            } else if (tempData.avg <= -20) {
+              hours = 12;
+              minutes = 60;
+            } else if (tempData.avg <= -15) {
+              hours = 10;
+              minutes = 60;
+            } else if (tempData.avg <= -10) {
               hours = 8;
               minutes = 60;
-
-            } else if (tempData.min <= -10) {
-              // Lowest during the day -15...
-              hours = 7;
-              minutes = 45;
-
-            } else if (tempData.min <= -5) {
-              // Lowest during the day -10...-5 °C
+            } else if (tempData.avg <= -5) {
               hours = 6;
-              minutes = 45;
-
-            } else {
-              // Do nothing --> use the user interface settings
-            } 
+              minutes = 60;
+            } else if (tempData.avg <= 0) {
+              hours = 4;
+              minutes = 60;
+            } else if (tempData.avg <= 5) {
+              hours = 2;
+              minutes = 60;
+            }
 
             //------------------------------
             // Functionality ends
             //------------------------------
-            state.si[inst].str = "Coldest today: " + tempData.min.toFixed(1) + "°C -> cheap hours: " + hours + " h, control: " + minutes + " min";
-            console.log("Coldest today:", tempData.min.toFixed(1), "°C -> set number of cheapest hours to ", hours, "h and control minutes to", minutes, "min");
-
+            state.si[inst].str = "Average apparent temperature today: " + tempData.avg.toFixed(1) + "°C -> cheap hours: " + hours + " h, control: " + minutes + " min";
+            console.log("Average apparent temperature today:", tempData.avg.toFixed(1), "°C -> set number of cheapest hours to ", hours, "h and control minutes to", minutes, "min");
 
             // No need to fetch again today
             activeDay = new Date().getDate();
-            
+
           } else {
             throw new Error("Invalid temperature data");
           }
