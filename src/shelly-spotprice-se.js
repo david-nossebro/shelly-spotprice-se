@@ -1,15 +1,15 @@
 /**
- * @license
- * 
- * shelly-porssisahko
- * shelly-porssisahko-en
- * 
- * (c) Jussi isotalo - http://jisotalo.fi
- * https://github.com/jisotalo/shelly-porssisahko
- * https://github.com/jisotalo/shelly-porssisahko-en
- * 
- * License: GNU Affero General Public License v3.0 
- */
+* shelly-spotprice-se
+* 
+* https://github.com/david-nossebro/shelly-spotprice-se
+*
+* Special thanks to Jussi isotalo who created the original repo
+* available here:
+* https://github.com/jisotalo/shelly-porssisahko
+* https://github.com/jisotalo/shelly-porssisahko-en
+* 
+* @license GNU Affero General Public License v3.0 
+*/
 
 /** Constants etc. */
 const CNST = {
@@ -308,7 +308,7 @@ function updateTz(now) {
  * @param {string} str String to log
  */
 function log(str) {
-  console.log("shelly-porssisahko: " + str);
+  console.log("shelly-spotprice-se: " + str);
 }
 
 /**

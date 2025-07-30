@@ -1,20 +1,24 @@
 /**
- * shelly-porssisahko
- * 
- * (c) Jussi isotalo - http://jisotalo.fi
- * https://github.com/jisotalo/shelly-porssisahko
- * 
- * License: GNU Affero General Public License v3.0
- * 
- * This file is used for the build/minify process only.
- * NOTE: work-in-progress
- * 
- * Usage:
- *  npm run build : builds and creates files to ./dist
- *  npm start     : runs build and then uploads codes to shelly
- *  npm serve     : serves static file from ./src/statics at local http server port 3000
- *  npm debug     : starts listening to UDP data at port 8001 
- */
+* shelly-spotprice-se
+* 
+* https://github.com/david-nossebro/shelly-spotprice-se
+*
+* Special thanks to Jussi isotalo who created the original repo
+* available here:
+* https://github.com/jisotalo/shelly-porssisahko
+* https://github.com/jisotalo/shelly-porssisahko-en
+* 
+* @license GNU Affero General Public License v3.0 
+* 
+* This file is used for the build/minify process only.
+* NOTE: work-in-progress
+* 
+* Usage:
+*  npm run build : builds and creates files to ./dist
+*  npm start     : runs build and then uploads codes to shelly
+*  npm serve     : serves static file from ./src/statics at local http server port 3000
+*  npm debug     : starts listening to UDP data at port 8001 
+*/
 const fs = require('fs').promises;
 const path = require('path');
 const UglifyJS = require("uglify-js");

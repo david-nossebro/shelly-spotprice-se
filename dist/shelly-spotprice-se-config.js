@@ -1,5 +1,5 @@
 /**
- * This script updates the shelly-porssisahko script's
+ * This script updates the shelly-spotprice-se script's
  * settings in Shelly's KVS memory.
  * 
  * Use case e.g. if you want to update settings remotely,
@@ -367,7 +367,7 @@ function chkConfig(inst) {
       if (inst < 2) {
         Timer.set(500, false, function () { chkConfig(inst + 1); });
       } else {
-        //Done - request porssisahko to reload
+        //Done - request spotprice-se to reload
         Timer.set(500, false, requestReload);
       }
     });

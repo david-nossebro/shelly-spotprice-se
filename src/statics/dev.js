@@ -1,15 +1,17 @@
 /**
- * shelly-porssisahko
- * shelly-porssisahko-en
- * 
- * (c) Jussi isotalo - http://jisotalo.fi
- * https://github.com/jisotalo/shelly-porssisahko
- * https://github.com/jisotalo/shelly-porssisahko-en
- * 
- * License: GNU Affero General Public License v3.0 
- * 
- * This file is loaded only during local development
- */
+* shelly-spotprice-se
+* 
+* https://github.com/david-nossebro/shelly-spotprice-se
+*
+* Special thanks to Jussi isotalo who created the original repo
+* available here:
+* https://github.com/jisotalo/shelly-porssisahko
+* https://github.com/jisotalo/shelly-porssisahko-en
+* 
+* License: GNU Affero General Public License v3.0 
+* 
+* This file is loaded only during local development
+*/
 /** URL of the shelly */
 URL = "http://192.168.68.100";
 

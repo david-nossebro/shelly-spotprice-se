@@ -5,7 +5,7 @@ const SOURCE_PATH = './src/after-build/';
 const TARGET_PATH = './dist/';
 
 const run = async () => {
-  let filePath = `dist/shelly-porssisahko.js`;
+  let filePath = `dist/shelly-spotprice-se.js`;
   let mainCode = (await fs.readFile(filePath)).toString();
 
   //Creating all examples

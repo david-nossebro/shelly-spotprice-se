@@ -1,36 +1,36 @@
 [
   {
-    "fname": "dist/shelly-porssisahko.js",
-    "title": "Main script | All features (shelly-porssisahko.js)",
-    "description": "Main script with all features - supports multiple controls. Github: https://github.com/jisotalo/shelly-porssisahko-en"
+    "fname": "dist/shelly-spotprice-se.js",
+    "title": "Main script | All features (shelly-spotprice-se.js)",
+    "description": "Main script with all features - supports multiple controls. Github: https://github.com/david-nossebro/shelly-spotprice-se"
   },
   {
-    "fname": "dist/shelly-porssisahko-1-instance-no-history.js",
+    "fname": "dist/shelly-spotprice-se-1-instance-no-history.js",
     "title": "Main script | One control without history",
     "description": "Only one control without history (smaller memory usage)"
   },
   {
-    "fname": "dist/shelly-porssisahko-open-meteo-api.js",
+    "fname": "dist/shelly-spotprice-se-open-meteo-api.js",
     "title": "Example | Using weather forecast",
     "description": "Example: Uses weather forecast for the day to adjust number of cheapest hours."
   },
   {
-    "fname": "dist/shelly-porssisahko-addon-temp-hours.js",
+    "fname": "dist/shelly-spotprice-se-addon-temp-hours.js",
     "title": "Example | Using Plus Addon",
     "description": "Example: Uses temperature measured by Shelly Plus Addon to adjust number of cheapest hours"
   },
   {
-    "fname": "dist/shelly-porssisahko-addon-temp.js",
+    "fname": "dist/shelly-spotprice-se-addon-temp.js",
     "title": "Example | Using Plus Addon 2",
     "description": "Example: Overrides output if needed by the temperature measured by Shelly Plus Addon"
   },
   {
-    "fname": "dist/shelly-porssisahko-ht-sensor-temp.js",
+    "fname": "dist/shelly-spotprice-se-ht-sensor-temp.js",
     "title": "Example | Using Shelly H&T",
     "description": "Example: Uses temperature measured by Shelly H&T to adjust number of cheapest hours"
   },
   {
-    "fname": "dist/shelly-porssisahko-config.js",
+    "fname": "dist/shelly-spotprice-se-config.js",
     "title": "Setting script | Parallel script to adjust settings",
     "description": "Can be used to change main script settings (for example remotely by Shelly app). Install as second script, change settings and run the script."
   }
