@@ -186,7 +186,22 @@
               if (j > d.p[dayIndex].length - 1)
                 break;
 
-              order.push(j);
+              // Forced hours that overrides cheapest hours should be removed so
+              // we still select the right amount of total hours in a period.
+              const binNow = (1 << j);
+              const isForcedHour = (ci.f & binNow) == binNow;
+              if (isForcedHour) {
+                const forcedOn = (ci.fc & binNow) == binNow;
+
+                // If hour is overriden to ON -> keep it
+                // If hour is overriden to OFF -> do not include among cheapest hours
+                // Note: Configuration of forced hours are inverted, if that setting is on.
+                if(forcedOn) {
+                  order.push(j);
+                }
+              } else {
+                order.push(j);
+              }
             }
 
             if (ci.m2.s) {
@@ -210,7 +225,7 @@
                 }
               }
 
-              for (let j = startIndex; j < startIndex + cnt; j++) {
+              for (let j = startIndex; j < startIndex + cnt && j < order.length; j++) {
                 cheapest.push(order[j]);
               }
 

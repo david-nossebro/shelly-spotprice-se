@@ -233,7 +233,7 @@ function getKvsKey(inst) {
  * @param {number} now current epoch time (s)
  */
 function isCurrentHour(value, now) {
-  let diff = now - value;
+  const diff = now - value;
   return diff >= 0 && diff < (60 * 60);
 }
 
@@ -316,7 +316,7 @@ function log(str) {
  */
 function addHistory(inst) {
   //Calculate history max length (based on instance count)
-  let max = _.s.enCnt > 0
+  const max = _.s.enCnt > 0
     ? CNST.HIST_LEN / _.s.enCnt
     : CNST.HIST_LEN;
 
@@ -341,7 +341,7 @@ function reqLogic() {
  * - Some things need to be kept up-to-date here
  */
 function updateState() {
-  let now = new Date();
+  const now = new Date();
 
   //Using unixtime from sys component to detect if NTP is synced (= time OK)
   //Previously used only Date() but after some firmware update it started to display strange dates at boot
@@ -349,7 +349,7 @@ function updateState() {
   _.s.dn = Shelly.getComponentConfig("sys").device.name;
 
   //Detecting if time has changed and getting prices again
-  let epochNow = epoch(now);
+  const epochNow = epoch(now);
 
   if (_.s.timeOK && Math.abs(epochNow - prevEpoch) > 300) {
     log("Time changed 5 min+ -> refresh");
@@ -391,7 +391,7 @@ function chkConfig(inst, callback) {
   }
 
   //Are we checking instance or common config
-  let source = inst < 0 ? CNST.DEF_CFG.COM : CNST.DEF_CFG.INST;
+  const source = inst < 0 ? CNST.DEF_CFG.COM : CNST.DEF_CFG.INST;
   let target = inst < 0 ? _.c.c : _.c.i[inst];
 
   //Note: Hard-coded to max 2 levels
@@ -418,7 +418,7 @@ function chkConfig(inst, callback) {
   }
 
   if (count > 0) {
-    let key = getKvsKey(inst);
+    const key = getKvsKey(inst);
 
     Shelly.call("KVS.Set", { key: key, value: JSON.stringify(target) }, function (res, err, msg, callback) {
       if (err) {
@@ -439,7 +439,7 @@ function chkConfig(inst, callback) {
  * Afterwards, sets loopRunning to false and starts another loop
  */
 function getConfig(inst) {
-  let key = getKvsKey(inst);
+  const key = getKvsKey(inst);
 
   Shelly.call('KVS.Get', { key: key }, function (res, err, msg) {
     if (inst < 0) {
@@ -534,7 +534,7 @@ function loop() {
  * @param {number} dayIndex 0 = today, 1 = tomorrow
  */
 function pricesNeeded(dayIndex) {
-  let now = new Date();
+  const now = new Date();
   let res = false;
 
   if (dayIndex == 1) {
@@ -587,8 +587,8 @@ function pricesNeeded(dayIndex) {
  */
 function logicRunNeeded(inst) {
   //Shortcuts
-  let st = _.si[inst];
-  let cfg = _.c.i[inst];
+  const st = _.si[inst];
+  const cfg = _.c.i[inst];
 
   //If not enabled, do nothing
   if (cfg.en != 1) {
@@ -597,8 +597,8 @@ function logicRunNeeded(inst) {
     return false;
   }
 
-  let now = new Date();
-  let chk = new Date(st.chkTs * 1000);
+  const now = new Date();
+  const chk = new Date(st.chkTs * 1000);
 
   //for debugging (run every minute)
   /*return st.chkTs == 0
@@ -634,7 +634,7 @@ function getPrices(dayIndex) {
 
   try {
     log("fetching prices for day " + dayIndex);
-    let now = new Date();
+    const now = new Date();
     updateTz(now);
 
     let date = now; // Default to 'now'
@@ -644,22 +644,19 @@ function getPrices(dayIndex) {
       date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    let month = date.getMonth() + 1;
-    let formattedMonth = (month < 10 ? "0" : "") + month;
-    let formattedDate = (date.getDate() < 10 ? "0" : "") + date.getDate();
+    const month = date.getMonth() + 1;
+    const formattedMonth = (month < 10 ? "0" : "") + month;
+    const formattedDate = (date.getDate() < 10 ? "0" : "") + date.getDate();
 
     let req = {
       url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + formattedMonth + "-" + formattedDate + "_"+_.c.c.g+".json",
       timeout: 5,
       ssl_ca: "*"
     };
-
     log("Request url: " + req.url)
 
-    //Clearing variables to save memory
-    date = null;
-
     Shelly.call("HTTP.GET", req, function (res, err, msg) {
+      // Clearing request object to save memory
       req = null;
       try {
         if (err === 0 && res != null && res.code === 200 && res.body) {
@@ -673,22 +670,25 @@ function getPrices(dayIndex) {
           _.s.p[dayIndex].high = -999;
           _.s.p[dayIndex].low = 999;
 
-          let listOfElectricityPrice = JSON.parse(res.body);
-          res.body = null;
+          const listOfElectricityPrice = JSON.parse(res.body);
           
+          //Again to save memory..
+          res = null;
+          
+          // Calculate multiplier: (100 + VAT%) / 100.0 (e.g., 1.25 for 25% VAT)
+          const vatMultiplier = (100 + _.c.c.vat) / 100.0;
+
           let totalPrice = 0;
 
           for (let i = 0; i < listOfElectricityPrice.length; i++) {
-            let electricityPrice = listOfElectricityPrice[i];
+            const electricityPrice = listOfElectricityPrice[i];
             let sekPerKwh = electricityPrice.SEK_per_kWh;
-            let timeStart = new Date(electricityPrice.time_start.slice(0, -5)); // Bug with handling timezone data on Shelly, so removed it.
-            let hour = timeStart.getHours();
-            let epoch = Math.floor(timeStart.getTime() / 1000);
+            const timeStart = new Date(electricityPrice.time_start.slice(0, -5)); // Bug with handling timezone data on Shelly, so removed it.
+            const hour = timeStart.getHours();
+            const epoch = Math.floor(timeStart.getTime() / 1000);
 
             // Add VAT (if possitive price)
             if (sekPerKwh > 0) {
-              // Calculate multiplier: (100 + VAT%) / 100.0 (e.g., 1.25 for 25% VAT)
-              let vatMultiplier = (100 + _.c.c.vat) / 100.0;
               sekPerKwh = sekPerKwh * vatMultiplier;
             }
 
@@ -713,9 +713,6 @@ function getPrices(dayIndex) {
 
             totalPrice += sekPerKwh;
           }
-
-          //Again to save memory..
-          res = null;
 
           //Calculate average and update timestamp
           _.s.p[dayIndex].avg = listOfElectricityPrice.length > 0 ? (totalPrice / listOfElectricityPrice.length) : 0;
@@ -797,12 +794,12 @@ function logic(inst) {
     }
 
     cmd[inst] = false;
-    let now = new Date();
+    const now = new Date();
     updateTz(now);
     updateCurrentPrice();
 
     let st = _.si[inst];
-    let cfg = _.c.i[inst];
+    const cfg = _.c.i[inst];
 
 
     if (cfg.mode === 0) {
@@ -853,9 +850,11 @@ function logic(inst) {
 
     //Forced hours
     if (_.s.timeOK && cfg.f > 0) {
-      let binNow = (1 << now.getHours());
-      if ((cfg.f & binNow) == binNow) {
-        cmd[inst] = (cfg.fc & binNow) == binNow;
+      const binNow = (1 << now.getHours());
+      const isForcedHour = (cfg.f & binNow) == binNow;
+      if (isForcedHour) {
+        const forcedOn = (cfg.fc & binNow) == binNow;
+        cmd[inst] = forcedOn;
         st.st = 10;
       }
     }
@@ -1006,7 +1005,22 @@ function isCheapestHour(inst) {
       if (_j > _.p[0].length - 1)
         break;
 
-      order.push(_j);
+      // Forced hours that overrides cheapest hours should be removed so
+      // we still select the right amount of total hours in a period.
+      const binNow = (1 << _j);
+      const isForcedHour = (cfg.f & binNow) == binNow;
+      if (isForcedHour) {
+        const forcedOn = (cfg.fc & binNow) == binNow;
+
+        // If hour is overriden to ON -> keep it
+        // If hour is overriden to OFF -> do not include among cheapest hours
+        // Note: Configuration of forced hours are inverted, if that setting is on.
+        if(forcedOn) {
+          order.push(_j);
+        }
+      } else {
+        order.push(_j);
+      }
     }
 
     if (cfg.m2.s) {
@@ -1030,7 +1044,7 @@ function isCheapestHour(inst) {
         }
       }
 
-      for (_j = _startIndex; _j < _startIndex + _cnt; _j++) {
+      for (_j = _startIndex; _j < _startIndex + _cnt && _j < order.length; _j++) {
         cheapest.push(order[_j]);
       }
 
@@ -1038,14 +1052,28 @@ function isCheapestHour(inst) {
       //Sort indexes by price
       _j = 0;
 
-      for (_k = 1; _k < order.length; _k++) {
-        let temp = order[_k];
+      // `order` is an array of hour indexes for a given period, e.g., [0, 1, 2, ..., 23]
+      // `_.p[0]` is an array containing today's price data, where each element is [timestamp, price].
+      // So, `_.p[0][hourIndex][1]` gives you the price for a specific hour.
 
-        for (_j = _k - 1; _j >= 0 && _.p[0][temp][1] < _.p[0][order[_j]][1]; _j--) {
-          order[_j + 1] = order[_j];
-        }
-        order[_j + 1] = temp;
+      // 1. Outer loop: Iterate through the array to be sorted
+      for (_k = 1; _k < order.length; _k++) {
+          // 2. Select the element to be positioned correctly
+          const temp = order[_k]; // `temp` holds the current hour's index, e.g., 5
+
+          // 3. Inner loop: Find the correct insertion spot in the already-sorted part of the array
+          //    It moves backwards from the element just before `temp`.
+          //    The condition `_.p[0][temp][1] < _.p[0][order[_j]][1]` compares the price of the `temp`
+          //    hour with the price of the hour at the current position in the sorted section.
+          for (_j = _k - 1; _j >= 0 && _.p[0][temp][1] < _.p[0][order[_j]][1]; _j--) {
+              // 4. Shift elements to the right to make space for `temp`
+              order[_j + 1] = order[_j];
+          }
+          
+          // 5. Insert `temp` into its correct sorted position
+          order[_j + 1] = temp;
       }
+
 
       //Select the cheapest ones
       for (_j = 0; _j < _cnt; _j++) {
@@ -1059,7 +1087,7 @@ function isCheapestHour(inst) {
   }
 
   //Check if current hour is cheap enough
-  let epochNow = epoch();
+  const epochNow = epoch();
   let res = false;
 
   for (let i = 0; i < cheapest.length; i++) {
@@ -1107,7 +1135,7 @@ function updateCurrentPrice() {
 }
 
 /**
- * Parses parameters from HTTP GET request query to array of objects
+ * Parses parameters from HTTP GET request query to an object
  * For example key=value&key2=value2
  * 
  * @param {string} params 
@@ -1115,7 +1143,7 @@ function updateCurrentPrice() {
 function parseParams(params) {
   let res = {};
   let splitted = params.split("&");
-
+  
   for (let i = 0; i < splitted.length; i++) {
     let pair = splitted[i].split("=");
 
