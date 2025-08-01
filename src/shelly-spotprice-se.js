@@ -11,7 +11,17 @@
 * @license GNU Affero General Public License v3.0 
 */
 
-/** Constants etc. */
+// ============================================================================
+// CONSTANTS AND CONFIGURATION
+// ============================================================================
+// This section contains all constant definitions, default configurations,
+// and configuration-related data structures used throughout the application.
+
+/**
+ * Constants etc.
+ * @type {import('../types/index.d.ts').Constants}
+ * @see {@link ../types/index.d.ts#Constants}
+ */
 const CNST = {
   /** Number of instances (if INSTANCE_COUNT is set, use it instead) */
   INST_COUNT: typeof INSTANCE_COUNT === 'undefined' ? 3 : INSTANCE_COUNT,
@@ -121,7 +131,18 @@ const CNST = {
   }
 };
 
-/** Main state of app */
+// ============================================================================
+// STATE MANAGEMENT
+// ============================================================================
+// This section manages the global application state, including system status,
+// instance states, price data, and configuration. Also includes state-related
+// utility variables and functions.
+
+/**
+ * Main state of app
+ * @type {import('../types/index.d.ts').AppState}
+ * @see {@link ../types/index.d.ts#AppState}
+ */
 let _ = {
   s: {
     /** version number */
@@ -210,11 +231,18 @@ let prevEpoch = 0;
  */
 let loopRunning = false;
 
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+// This section contains general utility functions used throughout the application
+// for common operations like time handling, data validation, and string processing.
+
 /**
  * Returns KVS key name for settings
- * 
- * @param {*} inst instance number 0..x or -1 = common
- * @returns 
+ *
+ * @param {number} inst instance number 0..x or -1 = common
+ * @returns {string} KVS key name
+ * @see {@link ../types/shelly-api.d.ts#ShellyKVS}
  */
 function getKvsKey(inst) {
   let key = "sptprc-se";
@@ -335,6 +363,11 @@ function reqLogic() {
   }
 }
 
+// ============================================================================
+// STATE MANAGEMENT (continued)
+// ============================================================================
+// State update and configuration management functions
+
 /**
  * Updates state (called intervally)
  * - Checks if time is OK
@@ -379,7 +412,12 @@ function updateState() {
 
 /**
  * Checks configuration
- * If a config key is missings, adds a new one with default value
+ * If a config key is missing, adds a new one with default value
+ *
+ * @param {number} inst instance number 0..x or -1 = common
+ * @param {function(boolean): void} callback callback function with success status
+ * @see {@link ../types/config.d.ts#ConfigurationSchema}
+ * @see {@link ../types/index.d.ts#Configuration}
  */
 function chkConfig(inst, callback) {
   let count = 0;
@@ -437,6 +475,10 @@ function chkConfig(inst, callback) {
 /**
  * Reads config from KVS.
  * Afterwards, sets loopRunning to false and starts another loop
+ *
+ * @param {number} inst instance number 0..x or -1 = common
+ * @see {@link ../types/shelly-api.d.ts#ShellyKVS}
+ * @see {@link ../types/index.d.ts#Configuration}
  */
 function getConfig(inst) {
   let key = getKvsKey(inst);
@@ -528,9 +570,15 @@ function loop() {
   }
 }
 
+// ============================================================================
+// PRICE DATA HANDLING
+// ============================================================================
+// This section handles all price-related operations including fetching prices
+// from the API, processing price data, and updating current price information.
+
 /**
  * Returns true if we need to fetch prices for selected day
- * 
+ *
  * @param {number} dayIndex 0 = today, 1 = tomorrow
  */
 function pricesNeeded(dayIndex) {
@@ -624,10 +672,12 @@ function logicRunNeeded(inst) {
 }
 
 /**
-
- * Gets prices for selected day
- * 
+ * Gets prices for selected day from elprisetjustnu.se API
+ *
  * @param {number} dayIndex 0 = today, 1 = tomorrow
+ * @see {@link ../types/shelly-api.d.ts#HTTPRequest}
+ * @see {@link ../types/index.d.ts#PriceData}
+ * @see {@link ../types/index.d.ts#CommonConfig}
  */
 function getPrices(dayIndex) {
   log("Fetching prices for " + _.c.c.g);
@@ -767,12 +817,21 @@ function getPrices(dayIndex) {
   }
 }
 
+// ============================================================================
+// DEVICE COMMUNICATION
+// ============================================================================
+// This section handles communication with Shelly devices, including
+// relay control and device status management.
+
 /**
  * Sets relay output to cmd
  * If callback given, its called with success status, like cb(true)
- * 
+ *
+ * @param {number} inst instance number
  * @param {number} output output number
- * @param {Function} callback callback to call after done
+ * @param {function(boolean): void} callback callback to call after done
+ * @see {@link ../types/shelly-api.d.ts#SwitchSetParams}
+ * @see {@link ../types/shelly-api.d.ts#ShellyAPI}
  */
 function setRelay(inst, output, callback) {
   let prm = "{id:" + output + ",on:" + (cmd[inst] ? "true" : "false") + "}";
@@ -786,8 +845,29 @@ function setRelay(inst, output, callback) {
   }, callback);
 }
 
+// ============================================================================
+// CONTROL LOGIC
+// ============================================================================
+// This section contains the core control logic that determines when devices
+// should be turned on/off based on price data, time, and configuration settings.
+
 /**
- * Runs the main logic
+ * Runs the main logic for a specific instance
+ *
+ * @param {number} inst instance number (0-based index)
+ * @description Determines output command based on current mode:
+ *   - Mode 0: Manual control
+ *   - Mode 1: Price limit comparison
+ *   - Mode 2: Cheapest hours calculation
+ *
+ * @example
+ * // Execute logic for first instance
+ * logic(0);
+ *
+ * @see {@link isCheapestHour} for cheapest hours calculation
+ * @see {@link updateCurrentPrice} for price data updates
+ * @see {@link ../types/index.d.ts#InstanceConfig}
+ * @see {@link ../types/index.d.ts#StatusCodes}
  */
 function logic(inst) {
   try {
@@ -951,9 +1031,14 @@ function logic(inst) {
 
 /**
  * Returns true if current hour is one of the cheapest
- * 
+ *
  * NOTE: Variables starting with _ are intentionally in global scope
  * to fix memory/stack issues
+ *
+ * @param {number} inst instance number (0-based index)
+ * @returns {boolean} true if current hour is among the cheapest
+ * @see {@link ../types/index.d.ts#CheapestHoursConfig}
+ * @see {@link ../types/index.d.ts#PriceData}
  */
 let _avg = 999;
 let _startIndex = 0;
@@ -1077,7 +1162,10 @@ function isCheapestHour(inst) {
 
 /**
  * Update current price to _.s.p[0].now
- * Returns true if OK, false if failed
+ *
+ * @returns {boolean|void} true if OK, false if failed
+ * @see {@link ../types/index.d.ts#PriceInfo}
+ * @see {@link ../types/index.d.ts#PriceData}
  */
 function updateCurrentPrice() {
   if (!_.s.timeOK || _.s.p[0].ts == 0) {
@@ -1106,11 +1194,19 @@ function updateCurrentPrice() {
   _.s.errTs = epoch();
 }
 
+// ============================================================================
+// HTTP SERVER AND API
+// ============================================================================
+// This section handles HTTP server functionality, request parsing,
+// and API endpoint implementations for the web interface.
+
 /**
  * Parses parameters from HTTP GET request query to array of objects
  * For example key=value&key2=value2
- * 
- * @param {string} params 
+ *
+ * @param {string} params query string parameters
+ * @returns {import('../types/index.d.ts').ApiRequestParams} parsed parameters object
+ * @see {@link ../types/index.d.ts#ApiRequestParams}
  */
 function parseParams(params) {
   let res = {};
@@ -1127,8 +1223,11 @@ function parseParams(params) {
 
 /**
  * Handles server HTTP requests
- * @param {*} request 
- * @param {*} response 
+ *
+ * @param {import('../types/shelly-api.d.ts').IncomingHTTPRequest} request HTTP request object
+ * @param {import('../types/shelly-api.d.ts').OutgoingHTTPResponse} response HTTP response object
+ * @see {@link ../types/index.d.ts#ApiRequestParams}
+ * @see {@link ../types/index.d.ts#StateResponse}
  */
 function onServerRequest(request, response) {
   try {
@@ -1289,6 +1388,12 @@ function onServerRequest(request, response) {
   }
   response.send();
 }
+
+// ============================================================================
+// INITIALIZATION AND STARTUP
+// ============================================================================
+// This section handles application initialization, startup procedures,
+// and the main execution entry point.
 
 function initialize() {
   _.c.i.pop();
