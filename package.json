@@ -4,13 +4,23 @@
   "description": "This is used for building/minifying shelly-spotprice-se",
   "main": "shelly-builder.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
     "build": "node shelly-builder.js --build shelly-spotprice-se.js && npm run after-build",
     "upload": "node shelly-builder.js --upload shelly-spotprice-se.js",
     "start": "npm run build && npm run upload",
     "serve": "serve ./src/statics",
     "debug": "node shelly-builder.js --debug",
-    "after-build": "node after-build.js"
+    "after-build": "node after-build.js",
+    "lint": "eslint src/ tests/ *.js",
+    "lint:fix": "eslint src/ tests/ *.js --fix",
+    "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"*.js\"",
+    "dev": "npm run lint && npm run test && npm run build",
+    "precommit": "npm run lint && npm run format:check && npm run test"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +29,37 @@
     "html-minifier": "^4.0.0",
     "serve": "^14.2.1",
     "uglify-js": "^3.17.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.12"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/tests"],
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/?(*.)+(spec|test).js"
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/after-build/**",
+      "!src/statics/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    },
+    "verbose": true,
+    "testTimeout": 10000
   }
 }

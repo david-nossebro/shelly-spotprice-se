@@ -32,6 +32,9 @@ TODO - Create new gif
 - [shelly-spotprice-se - Swedish nordpool electricity spot price control for Shelly devices](#shelly-spotprice-se---Swedish-nordpool-electricity-spot-price-control-for-shelly-devices)
   - [Features](#features)
   - [Table of contents](#table-of-contents)
+  - [Documentation](#documentation)
+  - [For Developers](#for-developers)
+  - [For AI Tools](#for-ai-tools)
   - [Changelog](#changelog)
   - [Support](#support)
   - [Installation](#installation)
@@ -64,6 +67,55 @@ TODO - Create new gif
     - [General](#general-1)
     - [Building the script](#building-the-script)
   - [License](#license)
+
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and component relationships
+- **[API Reference](docs/API_REFERENCE.md)** - Complete function and method documentation
+- **[Configuration Schema](docs/CONFIGURATION_SCHEMA.md)** - Detailed configuration options
+- **[Data Flow](docs/DATA_FLOW.md)** - How data moves through the system
+- **[Development Guide](docs/DEVELOPMENT.md)** - Setup and contribution guidelines
+- **[Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)** - Comprehensive coding standards and best practices
+- **[HTTP API](docs/HTTP_API.md)** - Web interface and REST endpoints
+- **[Extension System](docs/EXTENSION_SYSTEM.md)** - User script integration
+- **[AI Changes](docs/ai-changes/)** - Documentation of AI-assisted improvements and changes
+
+## For Developers
+
+This project includes comprehensive development tools and documentation:
+
+- **TypeScript Definitions**: Complete type definitions in [`types/`](types/) directory
+- **Test Suite**: Unit and integration tests in [`tests/`](tests/) directory
+- **Development Tools**: ESLint, Prettier, and JSDoc configurations
+- **Code Analysis**: JSConfig for enhanced IDE support
+
+Key development resources:
+- [Development Setup Guide](docs/DEVELOPMENT.md)
+- [Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)
+- [TypeScript Definitions](types/README.md)
+- [Architecture Documentation](docs/ARCHITECTURE.md)
+
+## For AI Tools
+
+This codebase has been optimized for AI tool analysis and assistance:
+
+- **Comprehensive Documentation**: All functions, classes, and modules are documented
+- **Type Definitions**: Complete TypeScript definitions for all interfaces and types
+- **Clear Architecture**: Well-documented system design and data flow
+- **Test Coverage**: Extensive test suite with examples and mocks
+- **Configuration Schema**: Detailed schema documentation for all settings
+- **AI Change History**: Complete documentation of AI-assisted improvements
+
+AI tools can effectively:
+- Understand the codebase structure through [Architecture docs](docs/ARCHITECTURE.md)
+- Follow development best practices through [Development Guidelines](docs/DEVELOPMENT_GUIDELINES.md)
+- Analyze data flow through [Data Flow documentation](docs/DATA_FLOW.md)
+- Reference complete APIs through [API Reference](docs/API_REFERENCE.md)
+- Use TypeScript definitions for accurate code analysis
+- Run tests to verify changes and understand expected behavior
+- Review AI improvement history in [AI Changes documentation](docs/ai-changes/)
 
 ## Changelog
 

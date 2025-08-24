@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "lib": ["es2018"],
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "esModuleInterop": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@types/*": ["types/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "types/**/*",
+    "tests/**/*",
+    "*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/after-build/**/*",
+    "dist/**/*"
+  ],
+  "typeAcquisition": {
+    "enable": true,
+    "include": ["jest"]
+  }
+}
