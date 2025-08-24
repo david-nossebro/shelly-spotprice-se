@@ -1,34 +1,34 @@
 /**
-* shelly-spotprice-se
-* 
-* https://github.com/david-nossebro/shelly-spotprice-se
-*
-* Special thanks to Jussi isotalo who created the original repo
-* available here:
-* https://github.com/jisotalo/shelly-porssisahko
-* https://github.com/jisotalo/shelly-porssisahko-en
-* 
-* @license GNU Affero General Public License v3.0 
-* 
-* This file is used for the build/minify process only.
-* NOTE: work-in-progress
-* 
-* Usage:
-*  npm run build : builds and creates files to ./dist
-*  npm start     : runs build and then uploads codes to shelly
-*  npm serve     : serves static file from ./src/statics at local http server port 3000
-*  npm debug     : starts listening to UDP data at port 8001 
-*/
+ * shelly-spotprice-se
+ *
+ * https://github.com/david-nossebro/shelly-spotprice-se
+ *
+ * Special thanks to Jussi isotalo who created the original repo
+ * available here:
+ * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
+ *
+ * @license GNU Affero General Public License v3.0
+ *
+ * This file is used for the build/minify process only.
+ * NOTE: work-in-progress
+ *
+ * Usage:
+ *  npm run build : builds and creates files to ./dist
+ *  npm start     : runs build and then uploads codes to shelly
+ *  npm serve     : serves static file from ./src/statics at local http server port 3000
+ *  npm debug     : starts listening to UDP data at port 8001
+ */
 const fs = require('fs').promises;
 const path = require('path');
-const UglifyJS = require("uglify-js");
+const UglifyJS = require('uglify-js');
 const minify = require('html-minifier').minify;
 const zlib = require('node:zlib');
 const { promisify } = require('node:util');
 const dgram = require('node:dgram');
 
 //Settings
-const BASE_URL = "http://192.168.68.100";
+const BASE_URL = 'http://192.168.68.100';
 const RPC_URL = `${BASE_URL}/rpc`;
 const MAX_CODE_CHUNK_SIZE = 1024;
 const GZIP = true;
@@ -38,37 +38,39 @@ const MAX_SCRIPT_SIZE = -1; //Max script size allowed in bytes
 
 const log = (...args) => {
   let time = new Date().toISOString();
-  time = time.substring(time.indexOf("T") + 1);
+  time = time.substring(time.indexOf('T') + 1);
 
   console.log(`${time}:`, ...args);
-}
+};
 
 /**
  * Returns all available scripts
- * @returns 
+ * @returns
  */
 const getScripts = async () => {
   log(`getScripts(): Reading all scripts from shelly...`);
   const res = await fetch(`${RPC_URL}/Script.List`);
 
   if (res.status !== 200) {
-    throw new Error(`getScripts(): Failed to read all scripts: ${JSON.stringify(await res.json())}`)
+    throw new Error(
+      `getScripts(): Failed to read all scripts: ${JSON.stringify(await res.json())}`
+    );
   }
 
   const scripts = (await res.json()).scripts;
   log(`getScripts(): Scripts read - found ${scripts.length} scripts`);
 
   return scripts;
-}
+};
 
 /**
  * Returns script id by given script name
- * 
+ *
  * If not found -> throws an error!
- * @param {*} name 
+ * @param {*} name
  * @returns
  */
-const getScriptId = async (name) => {
+const getScriptId = async name => {
   log(`getScriptId(): Reading scripts to find script named "${name}"...`);
   const scripts = await getScripts();
 
@@ -81,23 +83,27 @@ const getScriptId = async (name) => {
 
   log(`getScriptId(): Script "${name}" was not found`);
   throw new Error(`getScriptId(): Script "${name}" was not found`);
-}
+};
 
 /**
  * Creates a new script with given name
- * @param {*} name 
+ * @param {*} name
  */
-const createScript = async (name) => {
+const createScript = async name => {
   log(`createScript(): Creating script with name ${name}`);
 
   const res = await fetch(`${RPC_URL}/Script.Create?name="${encodeURI(name)}"`);
 
   if (res.status !== 200) {
-    throw new Error(`createScript(): Failed to create script "${name}": ${JSON.stringify(await res.json())}`)
+    throw new Error(
+      `createScript(): Failed to create script "${name}": ${JSON.stringify(await res.json())}`
+    );
   }
 
-  log(`createScript(): Script "${name}" created: ${JSON.stringify(await res.json())}`);
-}
+  log(
+    `createScript(): Script "${name}" created: ${JSON.stringify(await res.json())}`
+  );
+};
 
 /**
  * Deletes script by given script name or id
@@ -120,17 +126,21 @@ const deleteScript = async (nameOrId, throwIfNotFound = false) => {
   const res = await fetch(`${RPC_URL}/Script.Delete?id=${nameOrId}`);
 
   if (res.status !== 200) {
-    throw new Error(`deleteScript(): Failed to delete script with id ${nameOrId}: ${JSON.stringify(await res.json())}`)
+    throw new Error(
+      `deleteScript(): Failed to delete script with id ${nameOrId}: ${JSON.stringify(await res.json())}`
+    );
   }
 
-  log(`deleteScript(): Script with id ${nameOrId} deleted: ${JSON.stringify(await res.json())}`);
-}
+  log(
+    `deleteScript(): Script with id ${nameOrId} deleted: ${JSON.stringify(await res.json())}`
+  );
+};
 
 /**
  * Starts script by given script name or id
  * @param {*} name name or id
  */
-const startScript = async (nameOrId) => {
+const startScript = async nameOrId => {
   if (typeof nameOrId === 'string') {
     nameOrId = await getScriptId(nameOrId);
   }
@@ -139,38 +149,52 @@ const startScript = async (nameOrId) => {
   const res = await fetch(`${RPC_URL}/Script.Start?id=${nameOrId}`);
 
   if (res.status !== 200) {
-    throw new Error(`startScript(): Failed to start script with id ${nameOrId}: ${JSON.stringify(await res.json())}`)
+    throw new Error(
+      `startScript(): Failed to start script with id ${nameOrId}: ${JSON.stringify(await res.json())}`
+    );
   }
 
-  log(`startScript(): Script with id ${nameOrId} started: ${JSON.stringify(await res.json())}`);
-}
+  log(
+    `startScript(): Script with id ${nameOrId} started: ${JSON.stringify(await res.json())}`
+  );
+};
 
 /**
  * Sets script enable to false/true
- * @param {*} name 
+ * @param {*} name
  */
 const setScriptEnable = async (nameOrId, enable) => {
   if (typeof nameOrId === 'string') {
     nameOrId = await getScriptId(nameOrId);
   }
 
-  log(`setScriptEnable(): Setting script with id ${nameOrId} to enable: ${enable}`);
-  const res = await fetch(`${RPC_URL}/Script.SetConfig?id=${nameOrId}&config={"enable":${enable}}`);
+  log(
+    `setScriptEnable(): Setting script with id ${nameOrId} to enable: ${enable}`
+  );
+  const res = await fetch(
+    `${RPC_URL}/Script.SetConfig?id=${nameOrId}&config={"enable":${enable}}`
+  );
 
   if (res.status !== 200) {
-    throw new Error(`setScriptEnable(): Failed to set script with id ${nameOrId} enable to ${enable}: ${JSON.stringify(await res.json())}`)
+    throw new Error(
+      `setScriptEnable(): Failed to set script with id ${nameOrId} enable to ${enable}: ${JSON.stringify(await res.json())}`
+    );
   }
 
-  log(`setScriptEnable(): Script with id ${nameOrId} enable set to ${enable}: ${JSON.stringify(await res.json())}`);
-}
+  log(
+    `setScriptEnable(): Script with id ${nameOrId} enable set to ${enable}: ${JSON.stringify(await res.json())}`
+  );
+};
 
 /**
  * Uploads file contents to a script with given name
- * @param {*} name 
- * @param {*} filePath 
+ * @param {*} name
+ * @param {*} filePath
  */
 const uploadScript = async (name, id, filePath) => {
-  log(`uploadScript(): Starting upload of script "${name}" with id ${id} from file "${filePath}"`);
+  log(
+    `uploadScript(): Starting upload of script "${name}" with id ${id} from file "${filePath}"`
+  );
   const data = await fs.readFile(filePath);
 
   let pos = 0;
@@ -179,74 +203,88 @@ const uploadScript = async (name, id, filePath) => {
     const codeChunk = data.subarray(pos, pos + MAX_CODE_CHUNK_SIZE);
 
     //log(`uploadScript(): Uploading script "${name}" ${pos}...${pos + codeChunk.byteLength}/${data.byteLength}... (${RPC_URL}/Script.PutCode?id=${id}&code="${encodeURIComponent(codeChunk.toString())}"&append=${!firstTime})`);
-    log(`uploadScript(): Uploading script "${name}" ${pos}...${pos + codeChunk.byteLength}/${data.byteLength}...`);
-    const res = await fetch(`${RPC_URL}/Script.PutCode?id=${id}&code="${encodeURIComponent(codeChunk.toString())}"&append=${!firstTime}`);
+    log(
+      `uploadScript(): Uploading script "${name}" ${pos}...${pos + codeChunk.byteLength}/${data.byteLength}...`
+    );
+    const res = await fetch(
+      `${RPC_URL}/Script.PutCode?id=${id}&code="${encodeURIComponent(codeChunk.toString())}"&append=${!firstTime}`
+    );
 
     if (res.status !== 200) {
-      throw new Error(`uploadScript(): Failed to upload script chunk ${pos}...${pos + codeChunk.byteLength}/${data.byteLength}: ${JSON.stringify(await res.text())}`)
+      throw new Error(
+        `uploadScript(): Failed to upload script chunk ${pos}...${pos + codeChunk.byteLength}/${data.byteLength}: ${JSON.stringify(await res.text())}`
+      );
     }
 
-    log(`uploadScript(): Uploading script "${name}" ${pos}...${pos + codeChunk.byteLength}/${data.byteLength} successful: ${JSON.stringify(await res.json())}"`);
+    log(
+      `uploadScript(): Uploading script "${name}" ${pos}...${pos + codeChunk.byteLength}/${data.byteLength} successful: ${JSON.stringify(await res.json())}"`
+    );
 
     pos += codeChunk.byteLength;
     firstTime = false;
   }
-  log(`uploadScript(): Upload of script "${name}" with id ${id} from file "${filePath} done!"`);
-}
-
+  log(
+    `uploadScript(): Upload of script "${name}" with id ${id} from file "${filePath} done!"`
+  );
+};
 
 /**
  * Minifies the script file and writes to ./dist directory
- * @param {*} filePath 
- * @param {*} distPath 
+ * @param {*} filePath
+ * @param {*} distPath
  */
 const createDistFile = async (filePath, distPath, isShellyScript) => {
   log(`createDistFile(): Minifying script "${filePath}"...`);
   let data = (await fs.readFile(filePath)).toString();
 
   if (isShellyScript) {
-    let staticFileMatches = data.matchAll(/\#\[(.*)\]/gm);
+    const staticFileMatches = data.matchAll(/\#\[(.*)\]/gm);
     for (const staticFileMatch of staticFileMatches) {
-      data = data.replace(staticFileMatch[0], ((await fs.readFile(path.join('./dist/statics', staticFileMatch[1]))).toString()));
+      data = data.replace(
+        staticFileMatch[0],
+        (
+          await fs.readFile(path.join('./dist/statics', staticFileMatch[1]))
+        ).toString()
+      );
     }
   }
 
   let outputBuffer = Buffer.alloc(0);
   let gzippedBuffer = Buffer.alloc(0);
 
-  if (filePath.endsWith(".js")) {
+  if (filePath.endsWith('.js')) {
     const minified = UglifyJS.minify(data, {
       toplevel: true,
       output: {
-        comments: "some" //leaving @license comment
+        comments: 'some', //leaving @license comment
       },
       mangle: {
         toplevel: false, //if mangling toplevel, we get some rrors
         reserved: [
           //Some issues atm. with global constants -> setting so that names will not be mangled
-          "CNST",
-          "_" //Keeping state variable name as _ for user scripts
-        ]
+          'CNST',
+          '_', //Keeping state variable name as _ for user scripts
+        ],
       },
       compress: {
-        pure_funcs: [
-          'DBG',
-          'me'
-        ],
-        unsafe: true
+        pure_funcs: ['DBG', 'me'],
+        unsafe: true,
       },
     });
 
     if (minified.error) {
-      log(`createDistFile(): Minifying script "${filePath}" failed: ${minified.error}`);
-      throw new Error(`createDistFile(): Minifying script "${filePath}" failed: ${minified.error}`);
+      log(
+        `createDistFile(): Minifying script "${filePath}" failed: ${minified.error}`
+      );
+      throw new Error(
+        `createDistFile(): Minifying script "${filePath}" failed: ${minified.error}`
+      );
     }
 
-    
     outputBuffer = minified.code;
-    
+
     if (isShellyScript) {
-      outputBuffer += "\n//end";
+      outputBuffer += '\n//end';
     }
 
     if (GZIP && !isShellyScript) {
@@ -255,9 +293,10 @@ const createDistFile = async (filePath, distPath, isShellyScript) => {
       gzippedBuffer = Buffer.from(zippedData.toString('base64'), 'utf8');
     }
 
-    log(`createDistFile(): Minifying script "${filePath}" done - size is now ${(100.0 - (minified.code.length / data.length * 100.0)).toFixed(0)}% smaller`);
-
-  } else if (filePath.endsWith(".html") || filePath.endsWith(".css")) {
+    log(
+      `createDistFile(): Minifying script "${filePath}" done - size is now ${(100.0 - (minified.code.length / data.length) * 100.0).toFixed(0)}% smaller`
+    );
+  } else if (filePath.endsWith('.html') || filePath.endsWith('.css')) {
     const minified = minify(data, {
       removeAttributeQuotes: true,
       preserveLineBreaks: false,
@@ -274,7 +313,7 @@ const createDistFile = async (filePath, distPath, isShellyScript) => {
     });
 
     let trimmedData = minified.replace(/[\n\r]/g, '');
-    trimmedData = trimmedData.replace(/\s+/g, " ");
+    trimmedData = trimmedData.replace(/\s+/g, ' ');
     /*
         if (filePath.endsWith(".css")) {
           trimmedData = trimmedData.replaceAll("{ ", "{");
@@ -292,7 +331,6 @@ const createDistFile = async (filePath, distPath, isShellyScript) => {
       const zippedData = await gzip(outputBuffer);
       gzippedBuffer = Buffer.from(zippedData.toString('base64'), 'utf8');
     }
-
   } else {
     outputBuffer = Buffer.from(data, 'utf8');
   }
@@ -301,14 +339,20 @@ const createDistFile = async (filePath, distPath, isShellyScript) => {
 
   log(`createDistFile(): Creating dist file for "${filePath}" done`);
 
-  await fs.writeFile(distPath, GZIP && !isShellyScript ? gzippedBuffer : outputBuffer);
+  await fs.writeFile(
+    distPath,
+    GZIP && !isShellyScript ? gzippedBuffer : outputBuffer
+  );
 
   if (GZIP && !isShellyScript) {
     const fileExt = path.extname(distPath);
 
-    await fs.writeFile(distPath.replace(fileExt, `.nozip${fileExt}`), outputBuffer);
+    await fs.writeFile(
+      distPath.replace(fileExt, `.nozip${fileExt}`),
+      outputBuffer
+    );
   }
-}
+};
 
 /**
  * Uploads script file/s() from ./dist to the Shelly
@@ -319,7 +363,7 @@ const upload = async (files = []) => {
     files = await fs.readdir('./dist', { recursive: false });
   }
 
-  for (let file of files.sort()) {
+  for (const file of files.sort()) {
     const distPath = path.join('./dist', file);
     const fileInfo = await fs.stat(distPath);
 
@@ -336,7 +380,7 @@ const upload = async (files = []) => {
 
   log(`All files uploaded!`);
   printStats();
-}
+};
 
 /**
  * Builds and creates ./dist files from all ./src files
@@ -347,9 +391,9 @@ const build = async (files = []) => {
   await fs.mkdir('./dist/statics');
 
   //Static files (build all)
-  let staticFiles = await fs.readdir('./src/statics', { recursive: false });
+  const staticFiles = await fs.readdir('./src/statics', { recursive: false });
 
-  for (let file of staticFiles.sort()) {
+  for (const file of staticFiles.sort()) {
     const filePath = path.join('./src/statics', file);
     const distPath = path.join('./dist/statics', file);
 
@@ -361,13 +405,12 @@ const build = async (files = []) => {
     await createDistFile(filePath, distPath, false);
   }
 
-
   //Shelly files (build all or provided ones)
   if (!files || files.length === 0) {
     files = await fs.readdir('./src', { recursive: false });
   }
 
-  for (let file of files.sort()) {
+  for (const file of files.sort()) {
     const filePath = path.join('./src', file);
     const distPath = path.join('./dist', file);
 
@@ -381,17 +424,15 @@ const build = async (files = []) => {
   }
   log(`All files built!`);
   printStats();
-}
+};
 
 const printStats = async () => {
-
   log('--------------------------------------------------');
   log('Static files:');
   log('');
-  let statics = await fs.readdir('./dist/statics', { recursive: false });
-  for (let file of statics.sort()) {
-
-    if (file.includes(".nozip.")) {
+  const statics = await fs.readdir('./dist/statics', { recursive: false });
+  for (const file of statics.sort()) {
+    if (file.includes('.nozip.')) {
       continue;
     }
 
@@ -403,23 +444,30 @@ const printStats = async () => {
     }
 
     log(`  ${file}`);
-    if (MAX_STATIC_FILE_SIZE > 0 && MAX_STATIC_FILE_SIZE - fileInfo.size < 100) {
-      log(`    ${(fileInfo.size / 1024.0).toFixed(1)} KB\t${(MAX_STATIC_FILE_SIZE - fileInfo.size)} bytes left (used ${(fileInfo.size / MAX_STATIC_FILE_SIZE * 100.0).toFixed(0)} %) <---- WARNING!!!`);
+    if (
+      MAX_STATIC_FILE_SIZE > 0 &&
+      MAX_STATIC_FILE_SIZE - fileInfo.size < 100
+    ) {
+      log(
+        `    ${(fileInfo.size / 1024.0).toFixed(1)} KB\t${MAX_STATIC_FILE_SIZE - fileInfo.size} bytes left (used ${((fileInfo.size / MAX_STATIC_FILE_SIZE) * 100.0).toFixed(0)} %) <---- WARNING!!!`
+      );
     } else if (MAX_STATIC_FILE_SIZE > 0) {
-      log(`    ${(fileInfo.size / 1024.0).toFixed(1)} KB\t${(MAX_STATIC_FILE_SIZE - fileInfo.size)} bytes left (used ${(fileInfo.size / MAX_STATIC_FILE_SIZE * 100.0).toFixed(0)} %)`);
+      log(
+        `    ${(fileInfo.size / 1024.0).toFixed(1)} KB\t${MAX_STATIC_FILE_SIZE - fileInfo.size} bytes left (used ${((fileInfo.size / MAX_STATIC_FILE_SIZE) * 100.0).toFixed(0)} %)`
+      );
     } else {
       log(`    ${(fileInfo.size / 1024.0).toFixed(1)} KB`);
     }
   }
 
   log('--------------------------------------------------');
-  let files = await fs.readdir('./dist', { recursive: false });
+  const files = await fs.readdir('./dist', { recursive: false });
 
   log('File stats:');
   log('');
 
   let count = 0;
-  for (let file of files.sort()) {
+  for (const file of files.sort()) {
     const distPath = path.join('./dist', file);
     const fileInfo = await fs.stat(distPath);
 
@@ -429,7 +477,9 @@ const printStats = async () => {
 
     log(`  ${file}`);
     if (MAX_SCRIPT_SIZE > 0) {
-      log(`    ${(fileInfo.size / 1024.0).toFixed(1)} KB\t${(MAX_SCRIPT_SIZE - fileInfo.size)} bytes left (used ${(fileInfo.size / MAX_SCRIPT_SIZE * 100.0).toFixed(0)} %)`);
+      log(
+        `    ${(fileInfo.size / 1024.0).toFixed(1)} KB\t${MAX_SCRIPT_SIZE - fileInfo.size} bytes left (used ${((fileInfo.size / MAX_SCRIPT_SIZE) * 100.0).toFixed(0)} %)`
+      );
     } else {
       log(`    ${(fileInfo.size / 1024.0).toFixed(1)} KB`);
     }
@@ -439,39 +489,35 @@ const printStats = async () => {
   log(`Scripts in use ${count}/3`);
 
   log('--------------------------------------------------');
-}
+};
 
-const uploadAndBuildAll = async () => {
-  await buildAll();
-  await uploadAll();
-}
 
 const listenUdp = async () => {
-  fs.unlink("./log.txt").catch(err => { });
+  fs.unlink('./log.txt').catch(_err => {});
 
   const socket = dgram.createSocket('udp4');
 
-  socket.addListener('message', (msg, rinfo) => {
+  socket.addListener('message', (msg, _rinfo) => {
     let str = msg.toString('utf-8');
-    str = str.substring(str.indexOf("|") + 1);
-    str = str.substring(str.indexOf(" ") + 1);
+    str = str.substring(str.indexOf('|') + 1);
+    str = str.substring(str.indexOf(' ') + 1);
     str = str.trim();
 
-    if (str.includes("1 clears ")) {
+    if (str.includes('1 clears ')) {
       return;
     }
 
     log(str);
 
     let time = new Date().toISOString();
-    time = time.substring(time.indexOf("T") + 1);
-    fs.appendFile("./log.txt", `${time}: ${str} \n`).catch();
+    time = time.substring(time.indexOf('T') + 1);
+    fs.appendFile('./log.txt', `${time}: ${str} \n`).catch();
   });
 
   socket.bind(UDP_DEBUG_PORT, () => {
     log(`Listening to UDP port ${UDP_DEBUG_PORT}`);
   });
-}
+};
 
 //Handling command line parameters
 const args = process.argv.splice(2);

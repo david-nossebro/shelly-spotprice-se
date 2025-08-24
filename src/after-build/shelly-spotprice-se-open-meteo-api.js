@@ -3,37 +3,37 @@
 /**
  * This user script uses the Open-Meteo service's weather forecast to select the number of cheapest hours
  * The colder the temperature, the more cheaper hours are controlled and at the same time the number of control minutes is increased.
- * 
+ *
  * Edit your location coordinates below - Tampere as an example
  * You can find the coordinates e.g. at https://www.openstreetmap.org/ - right-click and select "show address"
- * 
+ *
  * After that, edit the logic below to your liking
  */
-let LATITUDE = "59.5342";
-let LONGITUDE = "13.6246";
+const LATITUDE = '59.5342';
+const LONGITUDE = '13.6246';
 
 // What control is fine-tuned (0 = control #1, 1 = control #2 etc.)
-let INSTANCE = 0;
+const INSTANCE = 0;
 
-/** 
+/**
  * Original settings
  */
-let originalConfig = {
+const originalConfig = {
   hours: 0,
-  minutes: 60
+  minutes: 60,
 };
 
-/** 
+/**
  * The day for which the temperatures have been fetched
  */
 let activeDay = -1;
 
-/** 
+/**
  * The lowest and highest temperature of the day
- */ 
-let tempData = {
+ */
+const tempData = {
   min: null,
-  max: null
+  max: null,
 };
 
 /**
@@ -41,7 +41,7 @@ let tempData = {
  */
 function USER_CONFIG(inst, initialized) {
   // If it is someone else's settings, do nothing
-  if (inst != INSTANCE) {
+  if (inst !== INSTANCE) {
     return;
   }
 
@@ -50,20 +50,20 @@ function USER_CONFIG(inst, initialized) {
   const config = state.c.i[inst];
 
   // If settings are not yet available, skip (new installation)
-  if (typeof config.m2 == "undefined") {
-    console.log("Save the settings once for the user script");
+  if (typeof config.m2 === 'undefined') {
+    console.log('Save the settings once for the user script');
     return;
   }
 
   // Save original settings to memory
-  if (initialized) { 
+  if (initialized) {
     // Executing temperature logic
     activeDay = -1;
 
     originalConfig.hours = config.m2.c;
     originalConfig.minutes = config.m;
 
-    console.log("Original settings:", originalConfig);
+    console.log('Original settings:', originalConfig);
   }
 }
 
@@ -73,7 +73,7 @@ function USER_CONFIG(inst, initialized) {
  */
 function USER_OVERRIDE(inst, cmd, callback) {
   // If it is someone else's settings, do nothing
-  if (inst != INSTANCE) {
+  if (inst !== INSTANCE) {
     callback(cmd);
     return;
   }
@@ -88,8 +88,11 @@ function USER_OVERRIDE(inst, cmd, callback) {
   let minutes = originalConfig.minutes;
 
   try {
-    if (activeDay == new Date().getDate()) {
-      console.log("Temperatures already fetched for today -> no changes:", tempData);
+    if (activeDay === new Date().getDate()) {
+      console.log(
+        'Temperatures already fetched for today -> no changes:',
+        tempData
+      );
       callback(cmd);
       return;
     }
@@ -101,37 +104,41 @@ function USER_OVERRIDE(inst, cmd, callback) {
     // daily=temperature_2m_mean
     // daily=apparent_temperature_mean
     let req = {
-      url: "https://api.open-meteo.com/v1/forecast?latitude=" + LATITUDE + "&longitude=" + LONGITUDE + "&daily=apparent_temperature_mean&timezone=auto&forecast_days=1",
+      url:
+        'https://api.open-meteo.com/v1/forecast?latitude=' +
+        LATITUDE +
+        '&longitude=' +
+        LONGITUDE +
+        '&daily=apparent_temperature_mean&timezone=auto&forecast_days=1',
       timeout: 5,
-      ssl_ca: "*"
+      ssl_ca: '*',
     };
 
-    console.log("Fetching temperature data:", req.url);
-    
-    Shelly.call("HTTP.GET", req, function (res, err, msg) {
+    console.log('Fetching temperature data:', req.url);
+
+    Shelly.call('HTTP.GET', req, function (res, err, msg) {
       try {
         req = null;
 
-        if (err === 0 && res != null && res.code === 200 && res.body) {
-          let data = JSON.parse(res.body);
+        if (err === 0 && res !== null && res.code === 200 && res.body) {
+          const data = JSON.parse(res.body);
           res.body = null;
 
           // Check if the response is valid
-          if (data.daily.apparent_temperature_mean != undefined) {
+          if (data.daily.apparent_temperature_mean !== undefined) {
             // Now we have the lowest and highest temperature for today
             //tempData.min = data.daily.temperature_2m_min[0];
             //tempData.max = data.daily.temperature_2m_max[0];
             tempData.avg = data.daily.apparent_temperature_mean[0];
 
-            console.log("Temperatures:", tempData);
+            console.log('Temperatures:', tempData);
 
             //------------------------------
             // Functionality
             // edit as you wish
             //------------------------------
 
-            
-            // Set the temperature based on the apparant_avg temperature 
+            // Set the temperature based on the apparant_avg temperature
             if (tempData.avg > 10) {
               hours = 1;
               minutes = 60;
@@ -176,22 +183,35 @@ function USER_OVERRIDE(inst, cmd, callback) {
             //------------------------------
             // Functionality ends
             //------------------------------
-            state.si[inst].str = "Average apparent temperature today: " + tempData.avg.toFixed(1) + "°C -> cheap hours: " + hours + " h, control: " + minutes + " min";
-            console.log("Average apparent temperature today:", tempData.avg.toFixed(1), "°C -> set number of cheapest hours to ", hours, "h and control minutes to", minutes, "min");
+            state.si[inst].str =
+              'Average apparent temperature today: ' +
+              tempData.avg.toFixed(1) +
+              '°C -> cheap hours: ' +
+              hours +
+              ' h, control: ' +
+              minutes +
+              ' min';
+            console.log(
+              'Average apparent temperature today:',
+              tempData.avg.toFixed(1),
+              '°C -> set number of cheapest hours to ',
+              hours,
+              'h and control minutes to',
+              minutes,
+              'min'
+            );
 
             // No need to fetch again today
             activeDay = new Date().getDate();
-
           } else {
-            throw new Error("Invalid temperature data");
+            throw new Error('Invalid temperature data');
           }
         } else {
-          throw new Error("Failed to fetch temperatures:" + msg);
+          throw new Error('Failed to fetch temperatures:' + msg);
         }
-
       } catch (err) {
-        state.si[inst].str = "Error in temperature control:" + err;
-        console.log("Error processing temperatures:", err);
+        state.si[inst].str = 'Error in temperature control:' + err;
+        console.log('Error processing temperatures:', err);
       }
 
       // Set values to settings
@@ -203,11 +223,10 @@ function USER_OVERRIDE(inst, cmd, callback) {
       callback(null);
       return;
     });
-
   } catch (err) {
-    state.si[inst].str = "Error in temperature control:" + err;
-    console.log("An error occurred in the USER_OVERRIDE function. Error:", err);
-    
+    state.si[inst].str = 'Error in temperature control:' + err;
+    console.log('An error occurred in the USER_OVERRIDE function. Error:', err);
+
     config.m2.c = hours;
     config.m = minutes;
 

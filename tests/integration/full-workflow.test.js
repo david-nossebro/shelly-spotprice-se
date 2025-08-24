@@ -2,7 +2,10 @@
  * Integration tests for full application workflow
  */
 
-const { testHelpers, mockPriceData, mockConfig } = require('../mocks/shelly-api');
+const {
+  testHelpers,
+  mockPriceData,
+} = require('../mocks/shelly-api');
 
 describe('Full Application Workflow Integration Tests', () => {
   beforeEach(() => {
@@ -14,14 +17,18 @@ describe('Full Application Workflow Integration Tests', () => {
   describe('Price fetching and processing workflow', () => {
     test('should fetch prices and update application state', async () => {
       // Mock successful HTTP response
-      global.Shelly.setMockResponse('HTTP.GET', {
-        url: expect.stringContaining('elprisetjustnu.se')
-      }, {
-        result: {
-          code: 200,
-          body: JSON.stringify(mockPriceData.today)
+      global.Shelly.setMockResponse(
+        'HTTP.GET',
+        {
+          url: expect.stringContaining('elprisetjustnu.se'),
+        },
+        {
+          result: {
+            code: 200,
+            body: JSON.stringify(mockPriceData.today),
+          },
         }
-      });
+      );
 
       // Create mock state
       const mockState = testHelpers.createMockState();
@@ -34,38 +41,43 @@ describe('Full Application Workflow Integration Tests', () => {
         return mockState.s.timeOK && mockState.s.p[0].ts === 0;
       };
 
-      const updatePrices = (priceData) => {
+      const updatePrices = priceData => {
         mockState.p[0] = priceData;
         mockState.s.p[0].ts = Math.floor(Date.now() / 1000);
-        
+
         // Calculate statistics
         const prices = priceData.map(p => p[1]);
         mockState.s.p[0].low = Math.min(...prices);
         mockState.s.p[0].high = Math.max(...prices);
-        mockState.s.p[0].avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+        mockState.s.p[0].avg =
+          prices.reduce((a, b) => a + b, 0) / prices.length;
       };
 
       // Test the workflow
       expect(pricesNeeded()).toBe(true);
-      
+
       updatePrices(mockPriceData.today);
-      
+
       expect(mockState.p[0]).toEqual(mockPriceData.today);
       expect(mockState.s.p[0].ts).toBeGreaterThan(0);
-      expect(mockState.s.p[0].low).toBe(0.10); // From mock data
+      expect(mockState.s.p[0].low).toBe(0.1); // From mock data
       expect(mockState.s.p[0].high).toBe(0.25); // From mock data
       expect(mockState.s.p[0].avg).toBeCloseTo(0.175, 2);
     });
 
     test('should handle price fetching errors gracefully', () => {
       // Mock failed HTTP response
-      global.Shelly.setMockResponse('HTTP.GET', {
-        url: expect.stringContaining('elprisetjustnu.se')
-      }, {
-        result: null,
-        error_code: 1,
-        error_message: 'Network error'
-      });
+      global.Shelly.setMockResponse(
+        'HTTP.GET',
+        {
+          url: expect.stringContaining('elprisetjustnu.se'),
+        },
+        {
+          result: null,
+          error_code: 1,
+          error_message: 'Network error',
+        }
+      );
 
       const mockState = testHelpers.createMockState();
       mockState.s.timeOK = 1;
@@ -94,13 +106,17 @@ describe('Full Application Workflow Integration Tests', () => {
       // Mock KVS response with partial config
       const partialConfig = {
         g: 'SE1',
-        vat: 20
+        vat: 20,
         // Missing day, night, names
       };
 
-      global.Shelly.setMockResponse('KVS.Get', { key: 'sptprc-se' }, {
-        result: { value: JSON.stringify(partialConfig) }
-      });
+      global.Shelly.setMockResponse(
+        'KVS.Get',
+        { key: 'sptprc-se' },
+        {
+          result: { value: JSON.stringify(partialConfig) },
+        }
+      );
 
       const mockState = testHelpers.createMockState();
       global._ = mockState;
@@ -109,14 +125,14 @@ describe('Full Application Workflow Integration Tests', () => {
       const loadConfig = () => {
         // Simulate loading from KVS
         const loadedConfig = partialConfig;
-        
+
         // Apply defaults for missing properties
         const defaultConfig = {
           g: 'SE3',
           vat: 25,
           day: 0,
           night: 0,
-          names: []
+          names: [],
         };
 
         const finalConfig = { ...defaultConfig, ...loadedConfig };
@@ -136,9 +152,13 @@ describe('Full Application Workflow Integration Tests', () => {
 
     test('should handle missing configuration gracefully', () => {
       // Mock KVS response with no config
-      global.Shelly.setMockResponse('KVS.Get', { key: 'sptprc-se' }, {
-        result: null
-      });
+      global.Shelly.setMockResponse(
+        'KVS.Get',
+        { key: 'sptprc-se' },
+        {
+          result: null,
+        }
+      );
 
       const mockState = testHelpers.createMockState();
       global._ = mockState;
@@ -150,7 +170,7 @@ describe('Full Application Workflow Integration Tests', () => {
           vat: 25,
           day: 0,
           night: 0,
-          names: []
+          names: [],
         };
 
         mockState.c.c = defaultConfig;
@@ -164,7 +184,7 @@ describe('Full Application Workflow Integration Tests', () => {
         vat: 25,
         day: 0,
         night: 0,
-        names: []
+        names: [],
       });
       expect(mockState.s.configOK).toBe(1);
     });
@@ -180,7 +200,7 @@ describe('Full Application Workflow Integration Tests', () => {
       global._ = mockState;
 
       // Simulate logic execution
-      const executeLogic = (inst) => {
+      const executeLogic = inst => {
         const cfg = mockState.c.i[inst];
         let cmd = false;
 
@@ -211,7 +231,7 @@ describe('Full Application Workflow Integration Tests', () => {
       global._ = mockState;
 
       // Simulate logic execution
-      const executeLogic = (inst) => {
+      const executeLogic = inst => {
         const cfg = mockState.c.i[inst];
         let cmd = false;
 
@@ -243,20 +263,22 @@ describe('Full Application Workflow Integration Tests', () => {
 
       // Simplified cheapest hour check
       const isCheapestHour = () => {
-        const sortedPrices = [...mockPriceData.today].sort((a, b) => a[1] - b[1]);
+        const sortedPrices = [...mockPriceData.today].sort(
+          (a, b) => a[1] - b[1]
+        );
         const cheapestHours = sortedPrices.slice(0, 4);
-        
+
         // Check if current hour is among cheapest (simplified)
         const now = Math.floor(Date.now() / 1000);
         const currentHourStart = now - (now % 3600);
-        
-        return cheapestHours.some(price => 
-          Math.abs(price[0] - currentHourStart) < 3600
+
+        return cheapestHours.some(
+          price => Math.abs(price[0] - currentHourStart) < 3600
         );
       };
 
       // Simulate logic execution
-      const executeLogic = (inst) => {
+      const executeLogic = inst => {
         const cfg = mockState.c.i[inst];
         let cmd = false;
 
@@ -284,10 +306,10 @@ describe('Full Application Workflow Integration Tests', () => {
 
       // Mock successful relay control
       global.Shelly.setMockResponse('Switch.Set', '{id:0,on:true}', {
-        result: { was_on: false }
+        result: { was_on: false },
       });
       global.Shelly.setMockResponse('Switch.Set', '{id:1,on:true}', {
-        result: { was_on: false }
+        result: { was_on: false },
       });
 
       // Simulate relay control synchronously
@@ -301,7 +323,7 @@ describe('Full Application Workflow Integration Tests', () => {
           results.push({
             success: result !== null,
             outputId,
-            result
+            result,
           });
         }
 
@@ -328,14 +350,14 @@ describe('Full Application Workflow Integration Tests', () => {
       // Simulate relay control with error handling
       const setRelayWithErrorHandling = (inst, outputId, command) => {
         const params = `{id:${outputId},on:${command ? 'true' : 'false'}}`;
-        
+
         // The mock will fall back to default responses when no specific mock is set
         const result = global.Shelly.call('Switch.Set', params);
-        
+
         return {
           success: result !== null && result !== undefined,
           outputId,
-          result
+          result,
         };
       };
 
@@ -354,14 +376,14 @@ describe('Full Application Workflow Integration Tests', () => {
       global._ = mockState;
 
       // Simulate HTTP request handling
-      const handleStateRequest = (inst) => {
+      const handleStateRequest = inst => {
         if (inst >= 0 && inst < 3 && mockState.c.i && mockState.c.i[inst]) {
           return {
             s: mockState.s,
             si: mockState.si[inst],
             c: mockState.c.c,
             ci: mockState.c.i[inst],
-            p: mockState.p
+            p: mockState.p,
           };
         }
         return null;

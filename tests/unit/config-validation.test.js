@@ -2,7 +2,7 @@
  * Unit tests for configuration validation functions
  */
 
-const { testHelpers, mockConfig } = require('../mocks/shelly-api');
+const { testHelpers } = require('../mocks/shelly-api');
 
 describe('Configuration Validation Functions', () => {
   let mockState;
@@ -19,14 +19,13 @@ describe('Configuration Validation Functions', () => {
       let count = 0;
 
       // Note: Hard-coded to max 2 levels (as in original)
-      for (let prop in defaultConfig) {
-        if (typeof targetConfig[prop] === "undefined") {
+      for (const prop in defaultConfig) {
+        if (typeof targetConfig[prop] === 'undefined') {
           targetConfig[prop] = defaultConfig[prop];
           count++;
-
-        } else if (typeof defaultConfig[prop] === "object") {
-          for (let innerProp in defaultConfig[prop]) {
-            if (typeof targetConfig[prop][innerProp] === "undefined") {
+        } else if (typeof defaultConfig[prop] === 'object') {
+          for (const innerProp in defaultConfig[prop]) {
+            if (typeof targetConfig[prop][innerProp] === 'undefined') {
               targetConfig[prop][innerProp] = defaultConfig[prop][innerProp];
               count++;
             }
@@ -41,11 +40,11 @@ describe('Configuration Validation Functions', () => {
       const defaultConfig = {
         g: 'SE3',
         vat: 25,
-        day: 0
+        day: 0,
       };
 
       const targetConfig = {
-        g: 'SE1'
+        g: 'SE1',
       };
 
       const count = chkConfigSimplified(-1, defaultConfig, targetConfig);
@@ -59,26 +58,26 @@ describe('Configuration Validation Functions', () => {
     test('should add missing nested properties', () => {
       const defaultConfig = {
         m0: {
-          c: 0
+          c: 0,
         },
         m1: {
-          l: 0
+          l: 0,
         },
         m2: {
           p: 24,
           c: 0,
-          l: -999
-        }
+          l: -999,
+        },
       };
 
       const targetConfig = {
         m0: {
-          c: 1
+          c: 1,
         },
         m1: {},
         m2: {
-          p: 12
-        }
+          p: 12,
+        },
       };
 
       const count = chkConfigSimplified(0, defaultConfig, targetConfig);
@@ -94,12 +93,12 @@ describe('Configuration Validation Functions', () => {
     test('should return 0 when no properties are missing', () => {
       const defaultConfig = {
         g: 'SE3',
-        vat: 25
+        vat: 25,
       };
 
       const targetConfig = {
         g: 'SE1',
-        vat: 20
+        vat: 20,
       };
 
       const count = chkConfigSimplified(-1, defaultConfig, targetConfig);
@@ -114,8 +113,8 @@ describe('Configuration Validation Functions', () => {
         g: 'SE3',
         vat: 25,
         m0: {
-          c: 0
-        }
+          c: 0,
+        },
       };
 
       const targetConfig = {};
@@ -135,15 +134,15 @@ describe('Configuration Validation Functions', () => {
           c: 0,
           l: -999,
           s: 0,
-          m: 999
-        }
+          m: 999,
+        },
       };
 
       const targetConfig = {
         m2: {
           p: 12,
-          c: 4
-        }
+          c: 4,
+        },
       };
 
       const count = chkConfigSimplified(0, defaultConfig, targetConfig);
@@ -160,10 +159,10 @@ describe('Configuration Validation Functions', () => {
   describe('getKvsKey function', () => {
     // Copy the getKvsKey function for testing
     function getKvsKey(inst) {
-      let key = "sptprc-se";
-      
+      let key = 'sptprc-se';
+
       if (inst >= 0) {
-        key = key + "-" + (inst + 1);
+        key = key + '-' + (inst + 1);
       }
 
       return key;
@@ -198,15 +197,22 @@ describe('Configuration Validation Functions', () => {
     }
 
     function validateOutputIds(outputs) {
-      return Array.isArray(outputs) && 
-             outputs.length > 0 && 
-             outputs.every(id => typeof id === 'number' && id >= 0);
+      return (
+        Array.isArray(outputs) &&
+        outputs.length > 0 &&
+        outputs.every(id => typeof id === 'number' && id >= 0)
+      );
     }
 
     function validateCheapestHoursConfig(config) {
-      return typeof config.p === 'number' && config.p >= -2 &&
-             typeof config.c === 'number' && config.c >= 0 &&
-             typeof config.s === 'number' && [0, 1].includes(config.s);
+      return (
+        typeof config.p === 'number' &&
+        config.p >= -2 &&
+        typeof config.c === 'number' &&
+        config.c >= 0 &&
+        typeof config.s === 'number' &&
+        [0, 1].includes(config.s)
+      );
     }
 
     test('should validate price regions correctly', () => {
@@ -272,13 +278,13 @@ describe('Configuration Validation Functions', () => {
         vat: 25,
         day: 0,
         night: 0,
-        names: []
+        names: [],
       };
 
       const userCommon = {
         g: 'SE1',
         vat: 20,
-        day: 4.5
+        day: 4.5,
       };
 
       const merged = { ...defaultCommon, ...userCommon };
@@ -298,20 +304,20 @@ describe('Configuration Validation Functions', () => {
         m1: { l: 0 },
         m2: { p: 24, c: 0, l: -999, s: 0, m: 999 },
         o: [0],
-        i: 0
+        i: 0,
       };
 
       const userInstance = {
         en: 1,
         mode: 2,
         m2: { p: 12, c: 4 },
-        o: [0, 1]
+        o: [0, 1],
       };
 
       const merged = {
         ...defaultInstance,
         ...userInstance,
-        m2: { ...defaultInstance.m2, ...userInstance.m2 }
+        m2: { ...defaultInstance.m2, ...userInstance.m2 },
       };
 
       expect(merged.en).toBe(1);
@@ -329,25 +335,28 @@ describe('Configuration Validation Functions', () => {
           level2: {
             prop1: 'default1',
             prop2: 'default2',
-            prop3: 'default3'
-          }
-        }
+            prop3: 'default3',
+          },
+        },
       };
 
       const userConfig = {
         level1: {
           level2: {
             prop1: 'user1',
-            prop3: 'user3'
-          }
-        }
+            prop3: 'user3',
+          },
+        },
       };
 
       // Simulate the 2-level deep merging from chkConfig
       // The actual chkConfig function only merges 2 levels deep, so level2 gets completely replaced
       const merged = { ...defaultConfig };
-      for (let prop in userConfig) {
-        if (typeof userConfig[prop] === 'object' && typeof merged[prop] === 'object') {
+      for (const prop in userConfig) {
+        if (
+          typeof userConfig[prop] === 'object' &&
+          typeof merged[prop] === 'object'
+        ) {
           merged[prop] = { ...merged[prop], ...userConfig[prop] };
         } else {
           merged[prop] = userConfig[prop];

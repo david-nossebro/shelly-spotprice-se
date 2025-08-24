@@ -1,15 +1,15 @@
 /**
-* shelly-spotprice-se
-* 
-* https://github.com/david-nossebro/shelly-spotprice-se
-*
-* Special thanks to Jussi isotalo who created the original repo
-* available here:
-* https://github.com/jisotalo/shelly-porssisahko
-* https://github.com/jisotalo/shelly-porssisahko-en
-* 
-* @license GNU Affero General Public License v3.0 
-*/
+ * shelly-spotprice-se
+ *
+ * https://github.com/david-nossebro/shelly-spotprice-se
+ *
+ * Special thanks to Jussi isotalo who created the original repo
+ * available here:
+ * https://github.com/jisotalo/shelly-porssisahko
+ * https://github.com/jisotalo/shelly-porssisahko-en
+ *
+ * @license GNU Affero General Public License v3.0
+ */
 
 // ============================================================================
 // CONSTANTS AND CONFIGURATION
@@ -24,9 +24,9 @@
  */
 const CNST = {
   /** Number of instances (if INSTANCE_COUNT is set, use it instead) */
-  INST_COUNT: typeof INSTANCE_COUNT === 'undefined' ? 3 : INSTANCE_COUNT,
+  INST_COUNT: typeof INSTANCE_COUNT === 'undefined' ? 3 : INSTANCE_COUNT, // Global variable
   /** Maximum total number of history rows - this is later divided by enabled instance count (3 enabled instances -> 8 history per each)*/
-  HIST_LEN: typeof HIST_LEN === 'undefined' ? 24 : HIST_LEN,
+  HIST_LEN: typeof HIST_LEN === 'undefined' ? 24 : HIST_LEN, // Global variable
   /** How many errors with getting prices until to have a break */
   ERR_LIMIT: 3,
   /** How long to wait after multiple errors (>= ERR_LIMIT) before trying again (s) */
@@ -52,7 +52,6 @@ const CNST = {
 
   /** Default configs - deleted from memory after checking */
   DEF_CFG: {
-
     /** Default config for common settings */
     COM: {
       /** Group (country) to get prices from */
@@ -64,29 +63,29 @@ const CNST = {
       /** Night (22...07) transfer price [c/kWh] */
       night: 0,
       /** Instance names */
-      names: []
+      names: [],
     },
 
     /** Default config for instance settings */
     INST: {
       /** Enabled [0/1]*/
       en: 0,
-      /**  
+      /**
        * Active mode
        * 0: manual mode (on/off toggle)
        * 1: price limit
-       * 2: cheapest hours 
-      */
+       * 2: cheapest hours
+       */
       mode: 0,
       /** Settings for mode 0 (manual) */
       m0: {
         /** Manual relay output command [0/1] */
-        c: 0
+        c: 0,
       },
       /** Settings for mode 1 (price limit) */
       m1: {
         /** Price limit limit - if price <= relay output command is set on [c/kWh] */
-        l: 0
+        l: 0,
       },
       /** Settings for mode 2 (cheapest hours) */
       m2: {
@@ -126,9 +125,9 @@ const CNST = {
       /** How many first minutes of the hour the output should be on [min]*/
       m: 60,
       /** Output config - when to set output (0 = always after running logic, 1 = only when output changes)*/
-      oc: 0
-    }
-  }
+      oc: 0,
+    },
+  },
 };
 
 // ============================================================================
@@ -143,10 +142,10 @@ const CNST = {
  * @type {import('../types/index.d.ts').AppState}
  * @see {@link ../types/index.d.ts#AppState}
  */
-let _ = {
+const _ = {
   s: {
     /** version number */
-    v: "4.0.0",
+    v: '4.0.0',
     /** Device name */
     dn: '',
     /** 1 if config is checked */
@@ -160,7 +159,7 @@ let _ = {
     /** epoch when started (when time was ok for first time) */
     upTs: 0,
     /** Active time zone as string (URL encoded - such as %2b02:00 = +02:00)*/
-    tz: "+02:00",
+    tz: '+02:00',
     /** Active time zone hour difference*/
     tzh: 0,
     /** Enabled instance count */
@@ -177,7 +176,7 @@ let _ = {
         /** highest price of the day */
         high: 0,
         /** average price of the day */
-        avg: 0
+        avg: 0,
       },
       {
         /** time when prices were read */
@@ -189,9 +188,9 @@ let _ = {
         /** highest price of the day */
         high: 0,
         /** average price of the day */
-        avg: 0
-      }
-    ]
+        avg: 0,
+      },
+    ],
   },
   /** status for instances */
   si: [CNST.DEF_INST_ST], //Initialized later - this is just for autocomplete
@@ -203,8 +202,8 @@ let _ = {
   /** actice config */
   c: {
     c: CNST.DEF_CFG.COM,
-    i: [CNST.DEF_CFG.INST] //Initialized later - this is just for autocomplete
-  }
+    i: [CNST.DEF_CFG.INST], //Initialized later - this is just for autocomplete
+  },
 };
 
 /**
@@ -217,7 +216,7 @@ let _inc = 0;
 let _cnt = 0;
 let _start = 0;
 let _end = 0;
-let cmd = []; // Active commands for each instances (internal)
+const cmd = []; // Active commands for each instances (internal)
 
 /**
  * Previous epoch time
@@ -226,7 +225,7 @@ let cmd = []; // Active commands for each instances (internal)
 let prevEpoch = 0;
 
 /**
- * True if loop is currently running 
+ * True if loop is currently running
  * (new one is not started + HTTP requests are not handled)
  */
 let loopRunning = false;
@@ -244,11 +243,11 @@ let loopRunning = false;
  * @returns {string} KVS key name
  * @see {@link ../types/shelly-api.d.ts#ShellyKVS}
  */
-function getKvsKey(inst) {
-  let key = "sptprc-se";
-  
+const getKvsKey = function(inst) {
+  let key = 'sptprc-se';
+
   if (inst >= 0) {
-    key = key + "-" + (inst + 1);
+    key = key + '-' + (inst + 1);
   }
 
   return key;
@@ -256,72 +255,71 @@ function getKvsKey(inst) {
 
 /**
  * Returns true if hour in epoch timestamp is current hour
- * 
+ *
  * @param {number} value epoch value
  * @param {number} now current epoch time (s)
  */
-function isCurrentHour(value, now) {
+const isCurrentHour = function(value, now) {
   const diff = now - value;
-  return diff >= 0 && diff < (60 * 60);
+  return diff >= 0 && diff < 60 * 60;
 }
 
 /**
  * Limits the value to min..max range
- * @param {number} min 
- * @param {number} value 
- * @param {number} max 
+ * @param {number} min
+ * @param {number} value
+ * @param {number} max
  */
-function limit(min, value, max) {
+const limit = function(min, value, max) {
   return Math.min(max, Math.max(min, value));
 }
 
 /**
  * Returns epoch time (seconds) without decimals
- * 
+ *
  * @param {Date?} date Date object (optional) - if not provided, using new Date()
  */
-function epoch(date) {
+const epoch = function(date) {
   return Math.floor((date ? date.getTime() : Date.now()) / 1000.0);
 }
 
 /**
  * Wrapper for Date.getDate to help minifying
- * 
- * @param {Date} dt 
+ *
+ * @param {Date} dt
  */
-function getDate(dt) {
+const getDate = function(dt) {
   return dt.getDate();
 }
 
 /**
- * Updates current timezone to state 
- *  - _.s.tz is set to timezone as string 
+ * Updates current timezone to state
+ *  - _.s.tz is set to timezone as string
  *    - If timezone is UTC -> result is "Z"
  *    - Otherwise the result is in format similar to -0200 or +0200
  *  - _.s.tzh is set to timezone hour difference (minutes are not handled)
- * 
+ *
  * @param {Date} now Date to use
  */
-function updateTz(now) {
+const updateTz = function(now) {
   //Get date as string: Fri Nov 10 2023 00:02:29 GMT+0200
   let tz = now.toString();
   let h = 0;
 
   //Get timezone part: +0200
-  tz = tz.substring(tz.indexOf("GMT") + 3);
+  tz = tz.substring(tz.indexOf('GMT') + 3);
 
   //If timezone is UTC, we need to use Z
-  if (tz == "+0000") {
-    tz = "Z";
+  if (tz === '+0000') {
+    tz = 'Z';
     h = 0;
-
   } else {
     //tz is now similar to -0100 or +0200 -> add : between hours and minutes
     h = Number(tz.substring(0, 3));
-    tz = tz.substring(0, 3) + ":" + tz.substring(3);
+    tz = tz.substring(0, 3) + ':' + tz.substring(3);
   }
 
-  if (tz != _.s.tz) {
+  if (tz !== _.s.tz) {
     //Timezone has changed -> we should get prices
     _.s.p[0].ts = 0;
   }
@@ -332,21 +330,19 @@ function updateTz(now) {
 
 /**
  * console.log() wrapper
- * 
+ *
  * @param {string} str String to log
  */
-function log(str) {
-  console.log("shelly-spotprice-se: " + str);
+const log = function(str) {
+  console.log('shelly-spotprice-se: ' + str);
 }
 
 /**
  * Adds command to history
  */
-function addHistory(inst) {
+const addHistory = function(inst) {
   //Calculate history max length (based on instance count)
-  const max = _.s.enCnt > 0
-    ? CNST.HIST_LEN / _.s.enCnt
-    : CNST.HIST_LEN;
+  const max = _.s.enCnt > 0 ? CNST.HIST_LEN / _.s.enCnt : CNST.HIST_LEN;
 
   while (CNST.HIST_LEN > 0 && _.h[inst].length >= max) {
     _.h[inst].splice(0, 1);
@@ -357,7 +353,7 @@ function addHistory(inst) {
 /**
  * Request all logics to run
  */
-function reqLogic() {
+const reqLogic = function() {
   for (let i = 0; i < CNST.INST_COUNT; i++) {
     _.si[i].chkTs = 0;
   }
@@ -373,19 +369,21 @@ function reqLogic() {
  * - Checks if time is OK
  * - Some things need to be kept up-to-date here
  */
-function updateState() {
+const updateState = function() {
   const now = new Date();
 
   //Using unixtime from sys component to detect if NTP is synced (= time OK)
   //Previously used only Date() but after some firmware update it started to display strange dates at boot
-  _.s.timeOK = Shelly.getComponentStatus("sys").unixtime != null && now.getFullYear() > 2000;
-  _.s.dn = Shelly.getComponentConfig("sys").device.name;
+  _.s.timeOK =
+    Shelly.getComponentStatus('sys').unixtime !== null &&
+    now.getFullYear() > 2000;
+  _.s.dn = Shelly.getComponentConfig('sys').device.name;
 
   //Detecting if time has changed and getting prices again
   const epochNow = epoch(now);
 
   if (_.s.timeOK && Math.abs(epochNow - prevEpoch) > 300) {
-    log("Time changed 5 min+ -> refresh");
+    log('Time changed 5 min+ -> refresh');
 
     _.s.p[0].ts = 0;
     _.s.p[0].now = 0;
@@ -419,7 +417,7 @@ function updateState() {
  * @see {@link ../types/config.d.ts#ConfigurationSchema}
  * @see {@link ../types/index.d.ts#Configuration}
  */
-function chkConfig(inst, callback) {
+const chkConfig = function(inst, callback) {
   let count = 0;
 
   //If config is already checked, do nothing (default configs removed from memory)
@@ -430,18 +428,16 @@ function chkConfig(inst, callback) {
 
   //Are we checking instance or common config
   const source = inst < 0 ? CNST.DEF_CFG.COM : CNST.DEF_CFG.INST;
-  let target = inst < 0 ? _.c.c : _.c.i[inst];
+  const target = inst < 0 ? _.c.c : _.c.i[inst];
 
   //Note: Hard-coded to max 2 levels
-  for (let prop in source) {
-
-    if (typeof target[prop] === "undefined") {
+  for (const prop in source) {
+    if (typeof target[prop] === 'undefined') {
       target[prop] = source[prop];
       count++;
-
-    } else if (typeof source[prop] === "object") {
-      for (let innerProp in source[prop]) {
-        if (typeof target[prop][innerProp] === "undefined") {
+    } else if (typeof source[prop] === 'object') {
+      for (const innerProp in source[prop]) {
+        if (typeof target[prop][innerProp] === 'undefined') {
           target[prop][innerProp] = source[prop][innerProp];
           count++;
         }
@@ -458,13 +454,17 @@ function chkConfig(inst, callback) {
   if (count > 0) {
     const key = getKvsKey(inst);
 
-    Shelly.call("KVS.Set", { key: key, value: JSON.stringify(target) }, function (res, err, msg, callback) {
-      if (err) {
-        log("failed to set config: " + err + " - " + msg);
-      }
-      callback(err == 0);
-
-    }, callback);
+    Shelly.call(
+      'KVS.Set',
+      { key: key, value: JSON.stringify(target) },
+      function (res, err, msg, callback) {
+        if (err) {
+          log('failed to set config: ' + err + ' - ' + msg);
+        }
+        callback(err === 0);
+      },
+      callback
+    );
     return;
   }
 
@@ -480,17 +480,17 @@ function chkConfig(inst, callback) {
  * @see {@link ../types/shelly-api.d.ts#ShellyKVS}
  * @see {@link ../types/index.d.ts#Configuration}
  */
-function getConfig(inst) {
+const getConfig = function(inst) {
   const key = getKvsKey(inst);
 
-  Shelly.call('KVS.Get', { key: key }, function (res, err, msg) {
+  Shelly.call('KVS.Get', { key: key }, function (res, _err, _msg) {
     if (inst < 0) {
       _.c.c = res ? JSON.parse(res.value) : {};
     } else {
       _.c.i[inst] = res ? JSON.parse(res.value) : {};
     }
 
-    if (typeof USER_CONFIG == 'function') {
+    if (typeof USER_CONFIG === 'function') {
       USER_CONFIG(inst, true);
     }
 
@@ -499,7 +499,7 @@ function getConfig(inst) {
       if (inst < 0) {
         _.s.configOK = ok ? 1 : 0;
       } else {
-        log("config for #" + (inst + 1) + " read, enabled: " + _.c.i[inst].en);
+        log('config for #' + (inst + 1) + ' read, enabled: ' + _.c.i[inst].en);
 
         _.si[inst].configOK = ok ? 1 : 0;
         _.si[inst].chkTs = 0; //To run the logic again with new settings
@@ -514,7 +514,7 @@ function getConfig(inst) {
 /**
  * Background process loop
  */
-function loop() {
+const loop = function() {
   try {
     if (loopRunning) {
       return;
@@ -526,15 +526,12 @@ function loop() {
     if (!_.s.configOK) {
       //Common config
       getConfig(-1);
-
     } else if (pricesNeeded(0)) {
       //Prices for today
       getPrices(0);
-
     } else if (pricesNeeded(1)) {
       //Prices for tomorrow
       getPrices(1);
-
     } else {
       //Instances
       //Separate loops to make sure configs are read first and in all cases
@@ -557,7 +554,7 @@ function loop() {
 
       //If we are here, there is nothing to
       //Is there a user script?
-      if (typeof USER_LOOP == 'function') {
+      if (typeof USER_LOOP === 'function') {
         USER_LOOP();
       } else {
         loopRunning = false;
@@ -565,7 +562,7 @@ function loop() {
     }
   } catch (err) {
     //Shouldn't happen
-    log("error at main loop:" + err);
+    log('error at main loop:' + err);
     loopRunning = false;
   }
 }
@@ -581,11 +578,11 @@ function loop() {
  *
  * @param {number} dayIndex 0 = today, 1 = tomorrow
  */
-function pricesNeeded(dayIndex) {
+const pricesNeeded = function(dayIndex) {
   const now = new Date();
   let res = false;
 
-  if (dayIndex == 1) {
+  if (dayIndex === 1) {
     /*
     Getting prices for tomorrow if
       - we have a valid time
@@ -593,29 +590,26 @@ function pricesNeeded(dayIndex) {
       - we don't have prices
     */
     res = _.s.timeOK && _.s.p[1].ts === 0 && now.getHours() >= 14;
-
   } else {
     /*
     Getting prices for today if
       - we have a valid time
       - we don't have prices OR prices aren't for this day
     */
-    let dateChanged = getDate(new Date(_.s.p[0].ts * 1000)) !== getDate(now);
+    const dateChanged = getDate(new Date(_.s.p[0].ts * 1000)) !== getDate(now);
 
     //Clear tomorrow data
     if (dateChanged) {
       _.s.p[1].ts = 0;
       _.p[1] = [];
-
     }
 
-    res = _.s.timeOK && (_.s.p[0].ts == 0 || dateChanged);
+    res = _.s.timeOK && (_.s.p[0].ts === 0 || dateChanged);
   }
 
   //If fetching prices has failed too many times -> wait until trying again
-  if (_.s.errCnt >= CNST.ERR_LIMIT && (epoch(now) - _.s.errTs) < CNST.ERR_DELAY) {
+  if (_.s.errCnt >= CNST.ERR_LIMIT && epoch(now) - _.s.errTs < CNST.ERR_DELAY) {
     res = false;
-
   } else if (_.s.errCnt >= CNST.ERR_LIMIT) {
     //We can clear error counter (time has passed)
     _.s.errCnt = 0;
@@ -625,21 +619,21 @@ function pricesNeeded(dayIndex) {
 }
 
 /**
- * 
+ *
  */
 /**
  * Returns true if we should run the logic now
  * for the selected instance
- * 
+ *
  * @param {*} inst instance number 0..x
  */
-function logicRunNeeded(inst) {
+const logicRunNeeded = function(inst) {
   //Shortcuts
   const st = _.si[inst];
   const cfg = _.c.i[inst];
 
   //If not enabled, do nothing
-  if (cfg.en != 1) {
+  if (cfg.en !== 1) {
     //clear history
     _.h[inst] = [];
     return false;
@@ -664,11 +658,16 @@ function logicRunNeeded(inst) {
     - manually forced command is active and time has passed
     - user wants the output to be commanded only for x first minutes of the hour which has passed (and command is not yet reset)
   */
-  return st.chkTs == 0
-    || (chk.getHours() !== now.getHours()
-      || chk.getFullYear() !== now.getFullYear())
-    || (st.fCmdTs > 0 && st.fCmdTs - epoch(now) < 0)
-    || (st.fCmdTs == 0 && cfg.m < 60 && now.getMinutes() >= cfg.m && (st.cmd + cfg.i) == 1);
+  return (
+    st.chkTs === 0 ||
+    chk.getHours() !== now.getHours() ||
+    chk.getFullYear() !== now.getFullYear() ||
+    (st.fCmdTs > 0 && st.fCmdTs - epoch(now) < 0) ||
+    (st.fCmdTs === 0 &&
+      cfg.m < 60 &&
+      now.getMinutes() >= cfg.m &&
+      st.cmd + cfg.i === 1)
+  );
 }
 
 /**
@@ -679,11 +678,11 @@ function logicRunNeeded(inst) {
  * @see {@link ../types/index.d.ts#PriceData}
  * @see {@link ../types/index.d.ts#CommonConfig}
  */
-function getPrices(dayIndex) {
-  log("Fetching prices for " + _.c.c.g);
+const getPrices = function(dayIndex) {
+  log('Fetching prices for ' + _.c.c.g);
 
   try {
-    log("fetching prices for day " + dayIndex);
+    log('fetching prices for day ' + dayIndex);
     const now = new Date();
     updateTz(now);
 
@@ -695,21 +694,30 @@ function getPrices(dayIndex) {
     }
 
     const month = date.getMonth() + 1;
-    const formattedMonth = (month < 10 ? "0" : "") + month;
-    const formattedDate = (date.getDate() < 10 ? "0" : "") + date.getDate();
+    const formattedMonth = (month < 10 ? '0' : '') + month;
+    const formattedDate = (date.getDate() < 10 ? '0' : '') + date.getDate();
 
     let req = {
-      url: "https://www.elprisetjustnu.se/api/v1/prices/" + date.getFullYear() + "/" + formattedMonth + "-" + formattedDate + "_"+_.c.c.g+".json",
+      url:
+        'https://www.elprisetjustnu.se/api/v1/prices/' +
+        date.getFullYear() +
+        '/' +
+        formattedMonth +
+        '-' +
+        formattedDate +
+        '_' +
+        _.c.c.g +
+        '.json',
       timeout: 5,
-      ssl_ca: "*"
+      ssl_ca: '*',
     };
-    log("Request url: " + req.url)
+    log('Request url: ' + req.url);
 
-    Shelly.call("HTTP.GET", req, function (res, err, msg) {
+    Shelly.call('HTTP.GET', req, function (res, err, msg) {
       // Clearing request object to save memory
       req = null;
       try {
-        if (err === 0 && res != null && res.code === 200 && res.body) {
+        if (err === 0 && res !== null && res.code === 200 && res.body) {
           //Clearing some fields to save memory
           res.headers = null;
           res.message = null;
@@ -721,10 +729,10 @@ function getPrices(dayIndex) {
           _.s.p[dayIndex].low = 999;
 
           const listOfElectricityPrice = JSON.parse(res.body);
-          
+
           //Again to save memory..
           res = null;
-          
+
           // Calculate multiplier: (100 + VAT%) / 100.0 (e.g., 1.25 for 25% VAT)
           const vatMultiplier = (100 + _.c.c.vat) / 100.0;
 
@@ -733,7 +741,9 @@ function getPrices(dayIndex) {
           for (let i = 0; i < listOfElectricityPrice.length; i++) {
             const electricityPrice = listOfElectricityPrice[i];
             let sekPerKwh = electricityPrice.SEK_per_kWh;
-            const timeStart = new Date(electricityPrice.time_start.slice(0, -5)); // Bug with handling timezone data on Shelly, so removed it.
+            const timeStart = new Date(
+              electricityPrice.time_start.slice(0, -5)
+            ); // Bug with handling timezone data on Shelly, so removed it.
             const hour = timeStart.getHours();
             const epoch = Math.floor(timeStart.getTime() / 1000);
 
@@ -753,11 +763,11 @@ function getPrices(dayIndex) {
 
             _.p[dayIndex].push([epoch, sekPerKwh]);
 
-            if(_.s.p[dayIndex].high < sekPerKwh) {
+            if (_.s.p[dayIndex].high < sekPerKwh) {
               _.s.p[dayIndex].high = sekPerKwh;
             }
 
-            if(_.s.p[dayIndex].low > sekPerKwh) {
+            if (_.s.p[dayIndex].low > sekPerKwh) {
               _.s.p[dayIndex].low = sekPerKwh;
             }
 
@@ -765,21 +775,23 @@ function getPrices(dayIndex) {
           }
 
           //Calculate average and update timestamp
-          _.s.p[dayIndex].avg = listOfElectricityPrice.length > 0 ? (totalPrice / listOfElectricityPrice.length) : 0;
+          _.s.p[dayIndex].avg =
+            listOfElectricityPrice.length > 0
+              ? totalPrice / listOfElectricityPrice.length
+              : 0;
           _.s.p[dayIndex].ts = epoch(now);
 
           if (_.p[dayIndex].length < 23) {
             //Let's assume that if we have data for at least 23 hours everything is OK
             //This should take DST saving changes in account
             //If we get less the prices may not be updated yet to elering API?
-            throw new Error("invalid data received");
+            throw new Error('invalid data received');
           }
         } else {
-          throw new Error(err + "(" + msg + ") - " + JSON.stringify(res));
+          throw new Error(err + '(' + msg + ') - ' + JSON.stringify(res));
         }
-
       } catch (err) {
-        log("error getting prices: " + err);
+        log('error getting prices: ' + err);
         _.s.errCnt += 1;
         _.s.errTs = epoch();
         _.s.p[dayIndex].ts = 0;
@@ -788,16 +800,15 @@ function getPrices(dayIndex) {
 
       //Done (success or not)
       //Run all logic again if prices are for today
-      if (dayIndex == 0) {
+      if (dayIndex === 0) {
         reqLogic();
       }
 
       loopRunning = false;
       Timer.set(500, false, loop);
     });
-
   } catch (err) {
-    log("error getting prices: " + err);
+    log('error getting prices: ' + err);
     _.s.errCnt += 1;
     _.s.errTs = epoch();
     _.s.p[dayIndex].ts = 0;
@@ -805,7 +816,7 @@ function getPrices(dayIndex) {
 
     //Done (error)
     //Run all logic again if prices are for today
-    if (dayIndex == 0) {
+    if (dayIndex === 0) {
       reqLogic();
     }
 
@@ -830,16 +841,21 @@ function getPrices(dayIndex) {
  * @see {@link ../types/shelly-api.d.ts#SwitchSetParams}
  * @see {@link ../types/shelly-api.d.ts#ShellyAPI}
  */
-function setRelay(inst, output, callback) {
-  let prm = "{id:" + output + ",on:" + (cmd[inst] ? "true" : "false") + "}";
+const setRelay = function(inst, output, callback) {
+  const prm = '{id:' + output + ',on:' + (cmd[inst] ? 'true' : 'false') + '}';
 
-  Shelly.call("Switch.Set", prm, function (res, err, msg, cb) {
-    if (err != 0) {
-      log("setting output " + output + " failed: " + err + " - " + msg);
-    }
+  Shelly.call(
+    'Switch.Set',
+    prm,
+    function (res, err, msg, _cb) {
+      if (err !== 0) {
+        log('setting output ' + output + ' failed: ' + err + ' - ' + msg);
+      }
 
-    callback(err == 0);
-  }, callback);
+      callback(err === 0);
+    },
+    callback
+  );
 }
 
 // ============================================================================
@@ -863,13 +879,13 @@ function setRelay(inst, output, callback) {
  *
  * @see {@link isCheapestHour} for cheapest hours calculation
  * @see {@link updateCurrentPrice} for price data updates
- * @see {@link ../types/index.d.ts#InstanceConfig}
+* @see {@link ../types/index.d.ts#InstanceConfig}
  * @see {@link ../types/index.d.ts#StatusCodes}
  */
-function logic(inst) {
+const logic = function(inst) {
   try {
     //This is a good time to update config if any overrides exist
-    if (typeof USER_CONFIG == 'function') {
+    if (typeof USER_CONFIG === 'function') {
       USER_CONFIG(inst, false);
     }
 
@@ -878,50 +894,56 @@ function logic(inst) {
     updateTz(now);
     updateCurrentPrice();
 
-    let st = _.si[inst];
+    const st = _.si[inst];
     const cfg = _.c.i[inst];
-
 
     if (cfg.mode === 0) {
       //Manual mode
       cmd[inst] = cfg.m0.c === 1;
       st.st = 1;
-
-    } else if (_.s.timeOK && (_.s.p[0].ts > 0 && getDate(new Date(_.s.p[0].ts * 1000)) === getDate(now))) {
+    } else if (
+      _.s.timeOK &&
+      _.s.p[0].ts > 0 &&
+      getDate(new Date(_.s.p[0].ts * 1000)) === getDate(now)
+    ) {
       //We have time and we have price data for today
 
       if (cfg.mode === 1) {
         //Price limit
-        cmd[inst] = _.s.p[0].now <= (cfg.m1.l == "avg" ? _.s.p[0].avg : cfg.m1.l);
+        cmd[inst] =
+          _.s.p[0].now <= (cfg.m1.l === 'avg' ? _.s.p[0].avg : cfg.m1.l);
         st.st = cmd[inst] ? 2 : 3;
-
       } else if (cfg.mode === 2) {
         //Cheapest hours
         cmd[inst] = isCheapestHour(inst);
         st.st = cmd[inst] ? 5 : 4;
 
         //always on price limit
-        if (!cmd[inst] && _.s.p[0].now <= (cfg.m2.l == "avg" ? _.s.p[0].avg : cfg.m2.l)) {
+        if (
+          !cmd[inst] &&
+          _.s.p[0].now <= (cfg.m2.l === 'avg' ? _.s.p[0].avg : cfg.m2.l)
+        ) {
           cmd[inst] = true;
           st.st = 6;
         }
 
         //maximum price
-        if (cmd[inst] && _.s.p[0].now > (cfg.m2.m == "avg" ? _.s.p[0].avg : cfg.m2.m)) {
+        if (
+          cmd[inst] &&
+          _.s.p[0].now > (cfg.m2.m === 'avg' ? _.s.p[0].avg : cfg.m2.m)
+        ) {
           cmd[inst] = false;
           st.st = 11;
         }
       }
-
     } else if (_.s.timeOK) {
       //We have time but no data for today
       st.st = 7;
 
-      let binNow = (1 << now.getHours());
-      if ((cfg.b & binNow) == binNow) {
+      const binNow = 1 << now.getHours();
+      if ((cfg.b & binNow) === binNow) {
         cmd[inst] = true;
       }
-
     } else {
       //Time is not known
       cmd[inst] = cfg.e === 1;
@@ -930,10 +952,10 @@ function logic(inst) {
 
     //Forced hours
     if (_.s.timeOK && cfg.f > 0) {
-      const binNow = (1 << now.getHours());
-      const isForcedHour = (cfg.f & binNow) == binNow;
+      const binNow = 1 << now.getHours();
+      const isForcedHour = (cfg.f & binNow) === binNow;
       if (isForcedHour) {
-        const forcedOn = (cfg.fc & binNow) == binNow;
+        const forcedOn = (cfg.fc & binNow) === binNow;
         cmd[inst] = forcedOn;
         st.st = 10;
       }
@@ -949,7 +971,7 @@ function logic(inst) {
     //Manual force
     if (_.s.timeOK && st.fCmdTs > 0) {
       if (st.fCmdTs - epoch(now) > 0) {
-        cmd[inst] = st.fCmd == 1;
+        cmd[inst] = st.fCmd === 1;
         st.st = 9;
       } else {
         st.fCmdTs = 0;
@@ -957,13 +979,13 @@ function logic(inst) {
     }
 
     function logicFinalize(finalCmd) {
-      if (finalCmd == null) {
+      if (finalCmd === null) {
         //User script wants to re-run logic
         loopRunning = false;
         return;
       }
       //Normally cmd == finalCmd, but user script could change it
-      if (cmd[inst] != finalCmd) {
+      if (cmd[inst] !== finalCmd) {
         st.st = 12;
       }
 
@@ -973,11 +995,18 @@ function logic(inst) {
       if (cfg.i) {
         cmd[inst] = !cmd[inst];
       }
-      log("logic for #" + (inst + 1) + " done, cmd: " + finalCmd + " -> output: " + cmd[inst]);
+      log(
+        'logic for #' +
+          (inst + 1) +
+          ' done, cmd: ' +
+          finalCmd +
+          ' -> output: ' +
+          cmd[inst]
+      );
 
-      if (cfg.oc == 1 && st.cmd == cmd[inst]) {
-        //No need to write 
-        log("outputs already set for #" + (inst + 1));
+      if (cfg.oc === 1 && st.cmd === cmd[inst]) {
+        //No need to write
+        log('outputs already set for #' + (inst + 1));
         st.cmd = cmd[inst] ? 1 : 0;
         st.chkTs = epoch();
         loopRunning = false;
@@ -995,10 +1024,10 @@ function logic(inst) {
             success++;
           }
 
-          if (cnt == cfg.o.length) {
+          if (cnt === cfg.o.length) {
             //All done
-            if (success == cnt) {
-              if (st.cmd != cmd[inst]) {
+            if (success === cnt) {
+              if (st.cmd !== cmd[inst]) {
                 addHistory(inst);
               }
 
@@ -1016,14 +1045,13 @@ function logic(inst) {
     }
 
     //User script
-    if (typeof USER_OVERRIDE == 'function') {
+    if (typeof USER_OVERRIDE === 'function') {
       USER_OVERRIDE(inst, cmd[inst], logicFinalize);
     } else {
       logicFinalize(cmd[inst]);
     }
-
   } catch (err) {
-    log("error running logic: " + JSON.stringify(err));
+    log('error running logic: ' + JSON.stringify(err));
     loopRunning = false;
   }
 }
@@ -1043,43 +1071,45 @@ let _avg = 999;
 let _startIndex = 0;
 let _sum = 0;
 
-function isCheapestHour(inst) {
-  let cfg = _.c.i[inst];
+const isCheapestHour = function(inst) {
+  const cfg = _.c.i[inst];
 
   //Safety checks
   cfg.m2.ps = limit(0, cfg.m2.ps, 23);
   cfg.m2.pe = limit(cfg.m2.ps, cfg.m2.pe, 24);
   cfg.m2.ps2 = limit(0, cfg.m2.ps2, 23);
   cfg.m2.pe2 = limit(cfg.m2.ps2, cfg.m2.pe2, 24);
-  cfg.m2.c = limit(0, cfg.m2.c, cfg.m2.p > 0 ? cfg.m2.p : cfg.m2.pe - cfg.m2.ps);
+  cfg.m2.c = limit(
+    0,
+    cfg.m2.c,
+    cfg.m2.p > 0 ? cfg.m2.p : cfg.m2.pe - cfg.m2.ps
+  );
   cfg.m2.c2 = limit(0, cfg.m2.c2, cfg.m2.pe2 - cfg.m2.ps2);
 
   //This is (and needs to be) 1:1 in both frontend and backend code
-  let cheapest = [];
+  const cheapest = [];
 
   //Select increment (a little hacky - to support custom periods too)
   _inc = cfg.m2.p < 0 ? 1 : cfg.m2.p;
 
   for (_i = 0; _i < _.p[0].length; _i += _inc) {
-    _cnt = (cfg.m2.p == -2 && _i >= 1 ? cfg.m2.c2 : cfg.m2.c);
+    _cnt = cfg.m2.p === -2 && _i >= 1 ? cfg.m2.c2 : cfg.m2.c;
 
     //Safety check
-    if (_cnt <= 0)
-      continue;
+    if (_cnt <= 0) continue;
 
     //Create array of indexes in selected period
-    let order = [];
+    const order = [];
 
     //If custom period -> select hours from that range. Otherwise use this period
     _start = _i;
-    _end = (_i + cfg.m2.p);
+    _end = _i + cfg.m2.p;
 
-    if (cfg.m2.p < 0 && _i == 0) {
-      //Custom period 1 
+    if (cfg.m2.p < 0 && _i === 0) {
+      //Custom period 1
       _start = cfg.m2.ps;
       _end = cfg.m2.pe;
-
-    } else if (cfg.m2.p == -2 && _i == 1) {
+    } else if (cfg.m2.p === -2 && _i === 1) {
       //Custom period 2
       _start = cfg.m2.ps2;
       _end = cfg.m2.pe2;
@@ -1087,20 +1117,19 @@ function isCheapestHour(inst) {
 
     for (_j = _start; _j < _end; _j++) {
       //If we have less hours than 24 then skip the rest from the end
-      if (_j > _.p[0].length - 1)
-        break;
+      if (_j > _.p[0].length - 1) break;
 
       // Forced hours that overrides cheapest hours should be removed so
       // we still select the right amount of total hours in a period.
-      const binNow = (1 << _j);
-      const isForcedHour = (cfg.f & binNow) == binNow;
+      const binNow = 1 << _j;
+      const isForcedHour = (cfg.f & binNow) === binNow;
       if (isForcedHour) {
-        const forcedOn = (cfg.fc & binNow) == binNow;
+        const forcedOn = (cfg.fc & binNow) === binNow;
 
         // If hour is overriden to ON -> keep it
         // If hour is overriden to OFF -> do not include among cheapest hours
         // Note: Configuration of forced hours are inverted, if that setting is on.
-        if(forcedOn) {
+        if (forcedOn) {
           order.push(_j);
         }
       } else {
@@ -1120,7 +1149,7 @@ function isCheapestHour(inst) {
         //Calculate sum of these sequential hours
         for (_k = _j; _k < _j + _cnt; _k++) {
           _sum += _.p[0][order[_k]][1];
-        };
+        }
 
         //If average price of these sequential hours is lower -> it's better
         if (_sum / _cnt < _avg) {
@@ -1129,10 +1158,13 @@ function isCheapestHour(inst) {
         }
       }
 
-      for (_j = _startIndex; _j < _startIndex + _cnt && _j < order.length; _j++) {
+      for (
+        _j = _startIndex;
+        _j < _startIndex + _cnt && _j < order.length;
+        _j++
+      ) {
         cheapest.push(order[_j]);
       }
-
     } else {
       //Sort indexes by price
       _j = 0;
@@ -1143,22 +1175,25 @@ function isCheapestHour(inst) {
 
       // 1. Outer loop: Iterate through the array to be sorted
       for (_k = 1; _k < order.length; _k++) {
-          // 2. Select the element to be positioned correctly
-          const temp = order[_k]; // `temp` holds the current hour's index, e.g., 5
+        // 2. Select the element to be positioned correctly
+        const temp = order[_k]; // `temp` holds the current hour's index, e.g., 5
 
-          // 3. Inner loop: Find the correct insertion spot in the already-sorted part of the array
-          //    It moves backwards from the element just before `temp`.
-          //    The condition `_.p[0][temp][1] < _.p[0][order[_j]][1]` compares the price of the `temp`
-          //    hour with the price of the hour at the current position in the sorted section.
-          for (_j = _k - 1; _j >= 0 && _.p[0][temp][1] < _.p[0][order[_j]][1]; _j--) {
-              // 4. Shift elements to the right to make space for `temp`
-              order[_j + 1] = order[_j];
-          }
-          
-          // 5. Insert `temp` into its correct sorted position
-          order[_j + 1] = temp;
+        // 3. Inner loop: Find the correct insertion spot in the already-sorted part of the array
+        //    It moves backwards from the element just before `temp`.
+        //    The condition `_.p[0][temp][1] < _.p[0][order[_j]][1]` compares the price of the `temp`
+        //    hour with the price of the hour at the current position in the sorted section.
+        for (
+          _j = _k - 1;
+          _j >= 0 && _.p[0][temp][1] < _.p[0][order[_j]][1];
+          _j--
+        ) {
+          // 4. Shift elements to the right to make space for `temp`
+          order[_j + 1] = order[_j];
+        }
+
+        // 5. Insert `temp` into its correct sorted position
+        order[_j + 1] = temp;
       }
-
 
       //Select the cheapest ones
       for (_j = 0; _j < _cnt; _j++) {
@@ -1167,8 +1202,7 @@ function isCheapestHour(inst) {
     }
 
     //If custom period, quit when all periods are done (1 or 2 periods)
-    if (cfg.m2.p == -1 || (cfg.m2.p == -2 && _i >= 1))
-      break;
+    if (cfg.m2.p === -1 || (cfg.m2.p === -2 && _i >= 1)) break;
   }
 
   //Check if current hour is cheap enough
@@ -1176,7 +1210,7 @@ function isCheapestHour(inst) {
   let res = false;
 
   for (let i = 0; i < cheapest.length; i++) {
-    let row = _.p[0][cheapest[i]];
+    const row = _.p[0][cheapest[i]];
 
     if (isCurrentHour(row[0], epochNow)) {
       //This hour is active -> current hour is one of the cheapest
@@ -1195,18 +1229,18 @@ function isCheapestHour(inst) {
  * @see {@link ../types/index.d.ts#PriceInfo}
  * @see {@link ../types/index.d.ts#PriceData}
  */
-function updateCurrentPrice() {
-  if (!_.s.timeOK || _.s.p[0].ts == 0) {
-    _.s.p[0].ts == 0;
+const updateCurrentPrice = function() {
+  if (!_.s.timeOK || _.s.p[0].ts === 0) {
+    _.s.p[0].ts = 0;
     _.s.p[0].now = 0;
     return;
   }
 
-  let now = epoch();
+  const now = epoch();
 
   for (let i = 0; i < _.p[0].length; i++) {
     if (isCurrentHour(_.p[0][i][0], now)) {
-      //This hour is active 
+      //This hour is active
       _.s.p[0].now = _.p[0][i][1];
       return true;
     }
@@ -1236,12 +1270,12 @@ function updateCurrentPrice() {
  * @returns {import('../types/index.d.ts').ApiRequestParams} parsed parameters object
  * @see {@link ../types/index.d.ts#ApiRequestParams}
  */
-function parseParams(params) {
-  let res = {};
-  let splitted = params.split("&");
-  
+const parseParams = function(params) {
+  const res = {};
+  const splitted = params.split('&');
+
   for (let i = 0; i < splitted.length; i++) {
-    let pair = splitted[i].split("=");
+    const pair = splitted[i].split('=');
 
     res[pair[0]] = pair[1];
   }
@@ -1257,7 +1291,7 @@ function parseParams(params) {
  * @see {@link ../types/index.d.ts#ApiRequestParams}
  * @see {@link ../types/index.d.ts#StateResponse}
  */
-function onServerRequest(request, response) {
+const onServerRequest = function(request, response) {
   try {
     if (loopRunning) {
       request = null;
@@ -1270,19 +1304,19 @@ function onServerRequest(request, response) {
 
     //Parsing parameters (key=value&key2=value2) to object
     let params = parseParams(request.query);
-    let inst = parseInt(params.i);
+    const inst = parseInt(params.i);
 
     request = null;
 
-    let MIME_TYPE = "application/json"; //default
+    let MIME_TYPE = 'application/json'; //default
     response.code = 200; //default
     let GZIP = true; //default
 
-    let MIME_HTML = "text/html";
-    let MIME_JS = "text/javascript";
-    let MIME_CSS = "text/css";
+    const MIME_HTML = 'text/html';
+    const MIME_JS = 'text/javascript';
+    const MIME_CSS = 'text/css';
 
-    if (params.r === "s") {
+    if (params.r === 's') {
       //s = get state
       updateState();
 
@@ -1293,12 +1327,11 @@ function onServerRequest(request, response) {
           si: _.si[inst],
           c: _.c.c,
           ci: _.c.i[inst],
-          p: _.p
+          p: _.p,
         });
       }
       GZIP = false;
-
-    } else if (params.r === "c") {
+    } else if (params.r === 'c') {
       //c = get config
       updateState();
 
@@ -1310,25 +1343,22 @@ function onServerRequest(request, response) {
       }
 
       GZIP = false;
-
-    } else if (params.r === "h") {
+    } else if (params.r === 'h') {
       //h = get history
       if (inst >= 0 && inst < CNST.INST_COUNT) {
         response.body = JSON.stringify(_.h[inst]);
       }
 
       GZIP = false;
-
-    } else if (params.r === "r") {
+    } else if (params.r === 'r') {
       //r = reload settings
       if (inst >= 0 && inst < CNST.INST_COUNT) {
         //Just one instance
-        log("config changed for #" + (inst + 1));
+        log('config changed for #' + (inst + 1));
         _.si[inst].configOK = false;
-
       } else {
         //For all
-        log("config changed");
+        log('config changed');
         for (let i = 0; i < CNST.INST_COUNT; i++) {
           _.si[i].configOK = false;
         }
@@ -1348,8 +1378,7 @@ function onServerRequest(request, response) {
 
       response.code = 204;
       GZIP = false;
-
-    } else if (params.r === "f" && params.ts) {
+    } else if (params.r === 'f' && params.ts) {
       //f = force
       if (inst >= 0 && inst < CNST.INST_COUNT) {
         _.si[inst].fCmdTs = Number(params.ts);
@@ -1359,59 +1388,49 @@ function onServerRequest(request, response) {
 
       response.code = 204;
       GZIP = false;
-
     } else if (!params.r) {
-      response.body = atob('#[index.html]');
+      response.body = atob('#[index.html]'); // Browser function
       MIME_TYPE = MIME_HTML;
-
-    } else if (params.r === "s.js") {
-      response.body = atob('#[s.js]');
+    } else if (params.r === 's.js') {
+      response.body = atob('#[s.js]'); // Browser function
       MIME_TYPE = MIME_JS;
-
-    } else if (params.r === "s.css") {
-      response.body = atob('#[s.css]');
+    } else if (params.r === 's.css') {
+      response.body = atob('#[s.css]'); // Browser function
       MIME_TYPE = MIME_CSS;
-
-    } else if (params.r === "status") {
-      response.body = atob('#[tab-status.html]');
+    } else if (params.r === 'status') {
+      response.body = atob('#[tab-status.html]'); // Browser function
       MIME_TYPE = MIME_HTML;
-
-    } else if (params.r === "status.js") {
-      response.body = atob('#[tab-status.js]');
+    } else if (params.r === 'status.js') {
+      response.body = atob('#[tab-status.js]'); // Browser function
       MIME_TYPE = MIME_JS;
-
-    } else if (params.r === "history") {
-      response.body = atob('#[tab-history.html]');
+    } else if (params.r === 'history') {
+      response.body = atob('#[tab-history.html]'); // Browser function
       MIME_TYPE = MIME_HTML;
-
-    } else if (params.r === "history.js") {
-      response.body = atob('#[tab-history.js]');
+    } else if (params.r === 'history.js') {
+      response.body = atob('#[tab-history.js]'); // Browser function
       MIME_TYPE = MIME_JS;
-
-    } else if (params.r === "config") {
-      response.body = atob('#[tab-config.html]');
+    } else if (params.r === 'config') {
+      response.body = atob('#[tab-config.html]'); // Browser function
       MIME_TYPE = MIME_HTML;
-
-    } else if (params.r === "config.js") {
-      response.body = atob('#[tab-config.js]');
+    } else if (params.r === 'config.js') {
+      response.body = atob('#[tab-config.js]'); // Browser function
       MIME_TYPE = MIME_JS;
-
     } else {
       response.code = 404;
     }
 
     params = null;
 
-    response.headers = [["Content-Type", MIME_TYPE]];
+    response.headers = [['Content-Type', MIME_TYPE]];
 
     //NOTE: Uncomment the next line for local development or remote API access (allows cors)
     //response.headers.push(["Access-Control-Allow-Origin", "*"]);
 
     if (GZIP) {
-      response.headers.push(["Content-Encoding", "gzip"]);
+      response.headers.push(['Content-Encoding', 'gzip']);
     }
   } catch (err) {
-    log("server error: " + err);
+    log('server error: ' + err);
     response.code = 500;
   }
   response.send();
@@ -1423,7 +1442,7 @@ function onServerRequest(request, response) {
 // This section handles application initialization, startup procedures,
 // and the main execution entry point.
 
-function initialize() {
+const initialize = function() {
   _.c.i.pop();
   _.si.pop();
 
@@ -1431,7 +1450,7 @@ function initialize() {
     _.si.push(Object.assign({}, CNST.DEF_INST_ST));
     _.c.i.push(Object.assign({}, CNST.DEF_CFG.INST));
 
-    _.c.c.names.push("-");
+    _.c.c.names.push('-');
     _.h.push([]);
 
     cmd.push(false);
@@ -1443,8 +1462,13 @@ function initialize() {
 }
 
 //Startup
-log("v." + _.s.v);
-log("URL: http://" + (Shelly.getComponentStatus("wifi").sta_ip ?? "192.168.33.1") + "/script/" + Shelly.getCurrentScriptId());
+log('v.' + _.s.v);
+log(
+  'URL: http://' +
+    (Shelly.getComponentStatus('wifi').sta_ip || '192.168.33.1') +
+    '/script/' +
+    Shelly.getCurrentScriptId()
+);
 
 initialize();
 

@@ -54,7 +54,7 @@ afterEach(() => {
   delete global.Shelly;
   delete global.Timer;
   delete global.HTTPServer;
-  
+
   // Clear all mocks
   jest.clearAllMocks();
 });
@@ -79,9 +79,8 @@ expect.extend({
   },
 
   toBeValidTimestamp(received) {
-    const pass = typeof received === 'number' && 
-                 received > 0 && 
-                 received < 9999999999; // Valid Unix timestamp range
+    const pass =
+      typeof received === 'number' && received > 0 && received < 9999999999; // Valid Unix timestamp range
     if (pass) {
       return {
         message: () => `expected ${received} not to be a valid timestamp`,
@@ -96,13 +95,15 @@ expect.extend({
   },
 
   toBeValidPriceData(received) {
-    const pass = Array.isArray(received) &&
-                 received.every(item => 
-                   Array.isArray(item) && 
-                   item.length === 2 &&
-                   typeof item[0] === 'number' && // timestamp
-                   typeof item[1] === 'number'    // price
-                 );
+    const pass =
+      Array.isArray(received) &&
+      received.every(
+        item =>
+          Array.isArray(item) &&
+          item.length === 2 &&
+          typeof item[0] === 'number' && // timestamp
+          typeof item[1] === 'number' // price
+      );
     if (pass) {
       return {
         message: () => `expected ${received} not to be valid price data`,
@@ -110,28 +111,32 @@ expect.extend({
       };
     } else {
       return {
-        message: () => `expected ${received} to be valid price data format [[timestamp, price], ...]`,
+        message: () =>
+          `expected ${received} to be valid price data format [[timestamp, price], ...]`,
         pass: false,
       };
     }
   },
 
   toBeValidShellyResponse(received) {
-    const pass = typeof received === 'object' &&
-                 received !== null &&
-                 (received.result !== undefined || received.error_code !== undefined);
+    const pass =
+      typeof received === 'object' &&
+      received !== null &&
+      (received.result !== undefined || received.error_code !== undefined);
     if (pass) {
       return {
-        message: () => `expected ${received} not to be a valid Shelly API response`,
+        message: () =>
+          `expected ${received} not to be a valid Shelly API response`,
         pass: true,
       };
     } else {
       return {
-        message: () => `expected ${received} to be a valid Shelly API response with result or error_code`,
+        message: () =>
+          `expected ${received} to be a valid Shelly API response with result or error_code`,
         pass: false,
       };
     }
-  }
+  },
 });
 
 // Helper functions available in all tests
@@ -146,7 +151,7 @@ global.testUtils = {
   /**
    * Create a timestamp for a specific hour today
    */
-  createHourTimestamp: (hour) => {
+  createHourTimestamp: hour => {
     const today = new Date();
     today.setHours(hour, 0, 0, 0);
     return Math.floor(today.getTime() / 1000);
@@ -159,13 +164,13 @@ global.testUtils = {
     const data = [];
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     for (let i = 0; i < hours; i++) {
-      const timestamp = Math.floor(startOfDay.getTime() / 1000) + (i * 3600);
+      const timestamp = Math.floor(startOfDay.getTime() / 1000) + i * 3600;
       const price = basePrice + (Math.random() - 0.5) * 0.1; // ±5 öre variation
       data.push([timestamp, Math.round(price * 100) / 100]);
     }
-    
+
     return data;
   },
 
@@ -184,27 +189,29 @@ global.testUtils = {
         vat: 25,
         day: 4.0,
         night: 3.0,
-        names: []
+        names: [],
       },
-      instances: [{
-        en: 1,
-        mode: 0,
-        m0: { c: 0 },
-        m1: { l: 0.15 },
-        m2: { p: 24, c: 4, l: -999, s: 0, m: 999 },
-        o: [0],
-        i: 0,
-        m: 60
-      }]
+      instances: [
+        {
+          en: 1,
+          mode: 0,
+          m0: { c: 0 },
+          m1: { l: 0.15 },
+          m2: { p: 24, c: 4, l: -999, s: 0, m: 999 },
+          o: [0],
+          i: 0,
+          m: 60,
+        },
+      ],
     };
 
     return {
       ...defaultConfig,
       ...overrides,
       common: { ...defaultConfig.common, ...overrides.common },
-      instances: overrides.instances || defaultConfig.instances
+      instances: overrides.instances || defaultConfig.instances,
     };
-  }
+  },
 };
 
 // Environment-specific setup
@@ -219,24 +226,24 @@ if (process.env.NODE_ENV === 'test') {
 global.setupMockTimers = () => {
   jest.useFakeTimers();
   return {
-    advanceTime: (ms) => jest.advanceTimersByTime(ms),
+    advanceTime: ms => jest.advanceTimersByTime(ms),
     runAllTimers: () => jest.runAllTimers(),
     runOnlyPendingTimers: () => jest.runOnlyPendingTimers(),
-    cleanup: () => jest.useRealTimers()
+    cleanup: () => jest.useRealTimers(),
   };
 };
 
 // Debug helpers
 global.debugTest = {
-  logState: (state) => {
+  logState: state => {
     if (process.env.DEBUG_TESTS) {
       console.log('Current state:', JSON.stringify(state, null, 2));
     }
   },
-  
+
   logMockCalls: (mockFn, name = 'Mock') => {
     if (process.env.DEBUG_TESTS) {
       console.log(`${name} calls:`, mockFn.mock.calls);
     }
-  }
+  },
 };

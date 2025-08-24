@@ -50,7 +50,7 @@ describe('Utility Functions', () => {
       const now = Date.now();
       const result = epoch();
       const expected = Math.floor(now / 1000);
-      
+
       // Allow for small time difference during test execution
       expect(Math.abs(result - expected)).toBeLessThanOrEqual(1);
     });
@@ -58,14 +58,14 @@ describe('Utility Functions', () => {
     test('should return epoch time for provided date', () => {
       const testDate = new Date('2023-01-01T12:00:00Z');
       const expected = Math.floor(testDate.getTime() / 1000);
-      
+
       expect(epoch(testDate)).toBe(expected);
     });
 
     test('should handle different date formats', () => {
       const testDate1 = new Date(2023, 0, 1, 12, 0, 0); // Local time
       const testDate2 = new Date('2023-01-01T12:00:00.000Z'); // ISO string
-      
+
       expect(epoch(testDate1)).toBe(Math.floor(testDate1.getTime() / 1000));
       expect(epoch(testDate2)).toBe(Math.floor(testDate2.getTime() / 1000));
     });
@@ -75,14 +75,14 @@ describe('Utility Functions', () => {
     // Copy the isCurrentHour function for testing
     function isCurrentHour(value, now) {
       const diff = now - value;
-      return diff >= 0 && diff < (60 * 60);
+      return diff >= 0 && diff < 60 * 60;
     }
 
     test('should return true when timestamp is in current hour', () => {
       const now = 1640995200; // 2022-01-01 00:00:00
       const currentHour = 1640995200; // Same hour
       const withinHour = 1640995200 + 1800; // 30 minutes later
-      
+
       expect(isCurrentHour(currentHour, now)).toBe(true);
       expect(isCurrentHour(withinHour, now + 1800)).toBe(true);
     });
@@ -92,7 +92,7 @@ describe('Utility Functions', () => {
       const previousHour = 1640991600; // Previous hour
       const nextHour = 1640998800; // Next hour
       const future = now + 3700; // More than 1 hour later
-      
+
       expect(isCurrentHour(previousHour, now)).toBe(false);
       expect(isCurrentHour(nextHour, now)).toBe(false);
       expect(isCurrentHour(future, now)).toBe(false);
@@ -102,7 +102,7 @@ describe('Utility Functions', () => {
       const now = 1640995200;
       const exactlyOneHour = now + 3600; // Exactly 1 hour later
       const justUnderOneHour = now + 3599; // Just under 1 hour
-      
+
       expect(isCurrentHour(exactlyOneHour, now + 3600)).toBe(true);
       expect(isCurrentHour(justUnderOneHour, now + 3599)).toBe(true);
     });
@@ -111,10 +111,10 @@ describe('Utility Functions', () => {
   describe('getKvsKey function', () => {
     // Copy the getKvsKey function for testing
     function getKvsKey(inst) {
-      let key = "sptprc-se";
-      
+      let key = 'sptprc-se';
+
       if (inst >= 0) {
-        key = key + "-" + (inst + 1);
+        key = key + '-' + (inst + 1);
       }
 
       return key;
@@ -146,8 +146,8 @@ describe('Utility Functions', () => {
         s: {
           tz: '',
           tzh: 0,
-          p: [{ ts: 100 }, { ts: 200 }]
-        }
+          p: [{ ts: 100 }, { ts: 200 }],
+        },
       };
       global._ = mockState;
     });
@@ -158,20 +158,19 @@ describe('Utility Functions', () => {
       let h = 0;
 
       //Get timezone part: +0200
-      tz = tz.substring(tz.indexOf("GMT") + 3);
+      tz = tz.substring(tz.indexOf('GMT') + 3);
 
       //If timezone is UTC, we need to use Z
-      if (tz == "+0000") {
-        tz = "Z";
+      if (tz === '+0000') {
+        tz = 'Z';
         h = 0;
-
       } else {
         //tz is now similar to -0100 or +0200 -> add : between hours and minutes
         h = Number(tz.substring(0, 3));
-        tz = tz.substring(0, 3) + ":" + tz.substring(3);
+        tz = tz.substring(0, 3) + ':' + tz.substring(3);
       }
 
-      if (tz != _.s.tz) {
+      if (tz !== _.s.tz) {
         //Timezone has changed -> we should get prices
         _.s.p[0].ts = 0;
       }
@@ -185,9 +184,9 @@ describe('Utility Functions', () => {
       const utcDate = new Date('2023-01-01T12:00:00.000Z');
       // Mock the toString to return expected format
       utcDate.toString = () => 'Sun Jan 01 2023 12:00:00 GMT+0000 (UTC)';
-      
+
       updateTz(utcDate);
-      
+
       expect(mockState.s.tz).toBe('+00:00 (UTC)');
       expect(mockState.s.tzh).toBe(0);
     });
@@ -196,9 +195,9 @@ describe('Utility Functions', () => {
       const date = new Date('2023-01-01T12:00:00.000Z');
       // Mock the toString to return expected format
       date.toString = () => 'Sun Jan 01 2023 14:00:00 GMT+0200 (EET)';
-      
+
       updateTz(date);
-      
+
       expect(mockState.s.tz).toBe('+02:00 (EET)');
       expect(mockState.s.tzh).toBe(2);
     });
@@ -207,9 +206,9 @@ describe('Utility Functions', () => {
       const date = new Date('2023-01-01T12:00:00.000Z');
       // Mock the toString to return expected format
       date.toString = () => 'Sun Jan 01 2023 07:00:00 GMT-0500 (EST)';
-      
+
       updateTz(date);
-      
+
       expect(mockState.s.tz).toBe('-05:00 (EST)');
       expect(mockState.s.tzh).toBe(-5);
     });
@@ -217,24 +216,24 @@ describe('Utility Functions', () => {
     test('should reset price timestamp when timezone changes', () => {
       mockState.s.tz = '+01:00';
       mockState.s.p[0].ts = 1000;
-      
+
       const date = new Date('2023-01-01T12:00:00.000Z');
       date.toString = () => 'Sun Jan 01 2023 14:00:00 GMT+0200 (EET)';
-      
+
       updateTz(date);
-      
+
       expect(mockState.s.p[0].ts).toBe(0);
     });
 
     test('should not reset price timestamp when timezone stays same', () => {
       mockState.s.tz = '+02:00 (EET)';
       mockState.s.p[0].ts = 1000;
-      
+
       const date = new Date('2023-01-01T12:00:00.000Z');
       date.toString = () => 'Sun Jan 01 2023 14:00:00 GMT+0200 (EET)';
-      
+
       updateTz(date);
-      
+
       expect(mockState.s.p[0].ts).toBe(1000);
     });
   });
@@ -242,11 +241,11 @@ describe('Utility Functions', () => {
   describe('parseParams function', () => {
     // Copy the parseParams function for testing
     function parseParams(params) {
-      let res = {};
-      let splitted = params.split("&");
-      
+      const res = {};
+      const splitted = params.split('&');
+
       for (let i = 0; i < splitted.length; i++) {
-        let pair = splitted[i].split("=");
+        const pair = splitted[i].split('=');
         res[pair[0]] = pair[1];
       }
 
@@ -263,7 +262,7 @@ describe('Utility Functions', () => {
       expect(result).toEqual({
         key1: 'value1',
         key2: 'value2',
-        key3: 'value3'
+        key3: 'value3',
       });
     });
 
@@ -271,7 +270,7 @@ describe('Utility Functions', () => {
       const result = parseParams('key1=&key2=value2');
       expect(result).toEqual({
         key1: '',
-        key2: 'value2'
+        key2: 'value2',
       });
     });
 
@@ -279,7 +278,7 @@ describe('Utility Functions', () => {
       const result = parseParams('key1&key2=value2');
       expect(result).toEqual({
         key1: undefined,
-        key2: 'value2'
+        key2: 'value2',
       });
     });
 
@@ -292,7 +291,7 @@ describe('Utility Functions', () => {
       const result = parseParams('name=John%20Doe&city=New%20York');
       expect(result).toEqual({
         name: 'John%20Doe', // Note: This function doesn't decode URL encoding
-        city: 'New%20York'
+        city: 'New%20York',
       });
     });
   });
