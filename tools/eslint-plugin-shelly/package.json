@@ -1,0 +1,9 @@
+{
+  "name": "eslint-plugin-shelly",
+  "version": "1.0.0",
+  "description": "ESLint rules for Shelly (Espruino) compatibility",
+  "main": "lib/index.js",
+  "keywords": ["eslint", "eslintplugin", "shelly", "espruino"],
+  "author": "",
+  "license": "ISC"
+}

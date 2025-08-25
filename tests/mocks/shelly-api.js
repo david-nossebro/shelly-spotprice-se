@@ -10,6 +10,7 @@ const mockShelly = {
   addEventHandler: jest.fn(),
   getComponentStatus: jest.fn(),
   getComponentConfig: jest.fn(),
+  getCurrentScriptId: jest.fn(),
 
   // Mock responses for common calls
   _mockResponses: new Map(),
@@ -27,6 +28,7 @@ const mockShelly = {
     this.addEventHandler.mockReset();
     this.getComponentStatus.mockReset();
     this.getComponentConfig.mockReset();
+    this.getCurrentScriptId.mockReset();
     this._mockResponses.clear();
   },
 };
@@ -39,15 +41,22 @@ mockShelly.call.mockImplementation((method, params, callback) => {
   if (response) {
     if (callback) {
       // Simulate async callback
-      setTimeout(
-        () =>
+      // Use Jest's fake timers if available, otherwise immediate
+      if (jest.isMockFunction(setTimeout)) {
+        jest.requireActual('timers').setImmediate(() => {
           callback(
             response.result,
             response.error_code,
             response.error_message
-          ),
-        0
-      );
+          );
+        });
+      } else {
+        callback(
+          response.result,
+          response.error_code,
+          response.error_message
+        );
+      }
     }
     return response.result;
   }
@@ -143,7 +152,8 @@ const mockTimer = {
 };
 
 // Initialize timer mock
-mockTimer.mockImplementation();
+// This needs to be done AFTER testHelpers.setupBasicMocks()
+// mockTimer.mockImplementation();
 
 // Mock HTTPServer object
 const mockHTTPServer = {
@@ -282,6 +292,45 @@ const testHelpers = {
     mockShelly.resetMocks();
     mockTimer.reset();
     mockHTTPServer.reset();
+    
+    // Set up default mock implementations for component access
+    mockShelly.getComponentStatus.mockImplementation((component) => {
+      const componentStatuses = {
+        'wifi': { sta_ip: '192.168.1.100' },
+        'sys': {
+          unixtime: Math.floor(Date.now() / 1000),
+          mac: 'test-mac',
+          restart_required: false,
+          time: '12:00',
+          uptime: 3600,
+          ram_size: 262144,
+          ram_free: 200000,
+          fs_size: 458752,
+          fs_free: 400000,
+          cfg_rev: 1,
+          kvs_rev: 1,
+          schedule_rev: 0,
+          webhook_rev: 0,
+          available_updates: {}
+        }
+      };
+      return componentStatuses[component] || {};
+    });
+
+    mockShelly.getComponentConfig.mockImplementation((component) => {
+      const componentConfigs = {
+        'sys': {
+          device: { name: 'Test Shelly Device' }
+        }
+      };
+      return componentConfigs[component] || {};
+    });
+
+    mockShelly.getCurrentScriptId.mockReturnValue(1);
+    
+    // Re-apply mock implementations after reset
+    mockTimer.mockImplementation();
+    mockHTTPServer.mockImplementation();
   },
 
   /**

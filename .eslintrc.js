@@ -5,14 +5,22 @@ module.exports = {
   },
   parserOptions: {
     ecmaVersion: 2018,
-    sourceType: 'script', // Not module, as Shelly uses script context
+    sourceType: 'script', // default for repo; Shelly-targeted files are overridden below
   },
+  // Resolve plugins relative to the tools directory so local plugins can be referenced by name.
+  // Local plugin is now added as a file: dependency in package.json so ESLint can load it from node_modules.
+  plugins: ['es', 'shelly'],
   globals: {
     // Shelly device globals
     Shelly: 'readonly',
+    Script: 'readonly',
     Timer: 'readonly',
+    MQTT: 'readonly',
+    BLE: 'readonly',
     HTTPServer: 'readonly',
+    KVS: 'readonly',
     console: 'readonly',
+    print: 'readonly',
     JSON: 'readonly',
     module: 'writable',
 
@@ -83,13 +91,71 @@ module.exports = {
     'comma-dangle': 'off',
   },
 
-  // Override rules for test files
+  // Shelly-targeted files: force ES5, ban modern features and add resource limits
   overrides: [
+    {
+      files: ['src/**/*.js', 'src/*.js', 'src/after-build/**/*.js', 'src/after-build/*.js'],
+      parserOptions: {
+        ecmaVersion: 5,
+        sourceType: 'script',
+      },
+      rules: {
+        // Resource / non-blocking rules
+        complexity: ['error', { max: 10 }],
+        'max-depth': ['error', 3],
+        'max-statements': ['error', 120],
+        'max-lines-per-function': ['error', { max: 200, skipComments: true }],
+        'no-constant-condition': 'error',
+        'no-implied-eval': 'error',
+        'max-nested-callbacks': ['error', 3],
+
+        // Ban delete operator via selector
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: "UnaryExpression[operator='delete']",
+            message: 'delete operator is banned for Shelly compatibility (use explicit nulling or other patterns)',
+          },
+        ],
+
+        // Ban specific property usages
+        'no-restricted-properties': [
+          'error',
+          {
+            object: 'arguments',
+            property: 'length',
+            message: 'Avoid using arguments.length; prefer explicit param handling for memory predictability',
+          },
+          {
+            object: 'Function',
+            property: 'replaceWith',
+            message: 'Function.replaceWith is not supported on Shelly runtime',
+          },
+        ],
+
+        // Ban modern JS features using eslint-plugin-es
+        'es/no-let': 'error',
+        'es/no-const': 'error',
+        'es/no-arrow-functions': 'error',
+        'es/no-classes': 'error',
+        'es/no-template-literals': 'error',
+        'es/no-async-await': 'error',
+        'es/no-rest-parameters': 'error',
+        'es/no-spread-elements': 'error',
+        'es/no-destructuring': 'error',
+
+        // Local plugin rules
+        'shelly/no-unicode-escape': 'error',
+      },
+    },
+
+    // Tests may use modern JS and node/jest env
     {
       files: ['tests/**/*.js', '**/*.test.js', '**/*.spec.js'],
       env: {
         node: true,
         jest: true,
+        es6: true,
       },
       globals: {
         describe: 'readonly',
@@ -106,10 +172,13 @@ module.exports = {
         'no-undef': 'error',
       },
     },
+
+    // after-build and tooling scripts run in node environment and may use modern features
     {
       files: ['after-build.js', 'shelly-builder.js'],
       env: {
         node: true,
+        es6: true,
       },
       globals: {
         require: 'readonly',
@@ -126,8 +195,14 @@ module.exports = {
         'no-undef': 'off',
       },
     },
+
+    // src/after-build can use modern JS in build helpers
     {
       files: ['src/after-build/**/*.js'],
+      env: {
+        es6: true,
+        node: true,
+      },
       rules: {
         'no-implicit-globals': 'off',
         'no-unused-vars': [
@@ -139,6 +214,8 @@ module.exports = {
         ],
       },
     },
+
+    // Browser statics are allowed modern JS
     {
       files: ['src/statics/**/*.js'],
       env: {
@@ -184,6 +261,18 @@ module.exports = {
           },
         ],
         'no-eval': 'off', // Allow eval in browser context
+      },
+    },
+
+    // Tools directory (local plugin development, build scripts) may use modern JS
+    {
+      files: ['tools/**/*.js'],
+      env: {
+        node: true,
+        es6: true,
+      },
+      rules: {
+        'no-undef': 'off',
       },
     },
   ],

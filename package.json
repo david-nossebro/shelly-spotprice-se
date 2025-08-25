@@ -17,6 +17,7 @@
     "after-build": "node after-build.js",
     "lint": "eslint src/ tests/ *.js",
     "lint:fix": "eslint src/ tests/ *.js --fix",
+    "lint:shelly": "eslint --config .eslintrc.js src/ src/after-build/shelly-spotprice-se.js",
     "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"*.js\"",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"*.js\"",
     "dev": "npm run lint && npm run test && npm run build",
@@ -31,26 +32,36 @@
     "uglify-js": "^3.17.4"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
+    "eslint-plugin-es": "^4.1.0",
+    "eslint-plugin-shelly": "file:./tools/eslint-plugin-shelly",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.12"
+    "prettier": "^3.2.5"
   },
   "jest": {
     "testEnvironment": "node",
-    "roots": ["<rootDir>/tests"],
+    "roots": [
+      "<rootDir>/tests"
+    ],
     "testMatch": [
       "**/__tests__/**/*.js",
       "**/?(*.)+(spec|test).js"
     ],
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/after-build/**",
       "!src/statics/**"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "coverageThreshold": {
       "global": {
         "branches": 70,
